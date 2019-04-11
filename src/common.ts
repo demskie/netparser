@@ -38,14 +38,15 @@ export function duplicateArray(arr: number[]) {
 
 export function offsetArrayWithCIDR(arr: number[], cidr: number, throwErrors?: boolean): number[] | null {
   if (cidr > 0 && (arr.length === 4 || arr.length === 16)) {
-    const targetByte = arr.length - Math.floor((arr.length * 8) / cidr) - 1;
+    const targetByte = Math.floor((cidr - 1) / 8);
     if (targetByte < arr.length) {
       const increment = Math.pow(2, 8 - (cidr - targetByte * 8));
       arr[targetByte] += increment;
-      if (arr[targetByte] > 255) {
-        arr[targetByte] %= 255;
+      if (arr[targetByte] >= 256) {
+        arr[targetByte] %= 256;
         if (targetByte > 0) {
-          return offsetArrayWithCIDR(arr, targetByte * 8);
+          const fixOverflowCIDR = targetByte * 8;
+          return offsetArrayWithCIDR(arr, fixOverflowCIDR);
         }
         if (throwErrors) {
           throw errorGenericOffsetArrayWithCIDR;
