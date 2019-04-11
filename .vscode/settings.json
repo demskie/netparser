@@ -1,0 +1,17 @@
+{
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "[json]": {
+    "editor.formatOnSave": true
+  },
+  "[javascript]": {
+    "editor.formatOnSave": false
+  },
+  "[typescript]": {
+    "editor.formatOnSave": false
+  },
+  "eslint.packageManager": "npm",
+  "eslint.autoFixOnSave": true,
+  "eslint.validate": ["javascript", { "language": "typescript", "autoFix": true }]
+}
