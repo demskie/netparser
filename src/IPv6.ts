@@ -55,16 +55,18 @@ export function addrToArray(v6Addr: string, throwErrors?: boolean) {
     if (hextets.length === 8) {
       const arr = new Array(16);
       for (var j = 0; j < 8; j++) {
-        switch (hextets[j].length) {
+        const hextet = hextets[j];
+        switch (hextet.length) {
           case 1:
           case 2:
             arr[2 * j] = 0;
-            arr[2 * j + 1] = parseInt(hextets[j], 16);
+            arr[2 * j + 1] = parseInt(hextet, 16);
             break;
           case 3:
           case 4:
-            arr[2 * j] = parseInt(hextets[j].slice(0, 2), 16);
-            arr[2 * j + 1] = parseInt(hextets[j].slice(2), 16);
+            arr[2 * j + 1] = parseInt(hextet, 16);
+            arr[2 * j] = Math.floor(arr[2 * j + 1] / 256);
+            arr[2 * j + 1] %= 256;
             break;
           default:
             if (throwErrors) {
