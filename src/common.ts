@@ -19,9 +19,7 @@ export function removeCIDR(s: string, throwErrors?: boolean) {
     case 2:
       return splitAddr[0];
   }
-  if (throwErrors) {
-    throw errorGenericRemoveCIDR;
-  }
+  if (throwErrors) throw errorGenericRemoveCIDR;
   return null;
 }
 
@@ -67,15 +65,11 @@ export function offsetAddressWithCIDR(bytes: Uint8Array, cidr: number, throwErro
         const supernetCIDR = targetByte * 8;
         return offsetAddressWithCIDR(bytes, supernetCIDR, throwErrors);
       }
-      if (throwErrors) {
-        throw errorOverflowedAddressSpace;
-      }
+      if (throwErrors) throw errorOverflowedAddressSpace;
       return null;
     }
   }
-  if (throwErrors) {
-    throw errorGenericOffsetAddressWithCIDR;
-  }
+  if (throwErrors) throw errorGenericOffsetAddressWithCIDR;
   return null;
 }
 

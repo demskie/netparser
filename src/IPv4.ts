@@ -12,18 +12,14 @@ export function addrToBytes(addr: string, throwErrors?: boolean) {
     for (var i = 0; i < 4; i++) {
       const val = parseInt(ip[i], 10);
       if (val < 0 || val > 255) {
-        if (throwErrors) {
-          throw AddrInvalidInteger;
-        }
+        if (throwErrors) throw AddrInvalidInteger;
         return null;
       }
       bytes[i] = val;
     }
     return bytes;
   }
-  if (throwErrors) {
-    throw AddrNotFourElements;
-  }
+  if (throwErrors) throw AddrNotFourElements;
   return null;
 }
 
@@ -31,8 +27,6 @@ export function bytesToAddr(bytes: Uint8Array, throwErrors?: boolean) {
   if (bytes.length >= 4) {
     return bytes.slice(bytes.length - 4, bytes.length).join(".");
   }
-  if (throwErrors) {
-    throw BytesNotFourElements;
-  }
+  if (throwErrors) throw BytesNotFourElements;
   return null;
 }

@@ -22,9 +22,7 @@ function padZeros(addr: string, throwErrors?: boolean) {
     splitAddr[0] += common.repeatString(":0", 8 - hextetCount);
     return splitAddr.join(":");
   }
-  if (throwErrors) {
-    throw errorGenericPadZeros;
-  }
+  if (throwErrors) throw errorGenericPadZeros;
   return null;
 }
 
@@ -102,9 +100,7 @@ function findLongestZeroHextetChain(bytes: Uint8Array, throwErrors?: boolean) {
     }
     return longest;
   }
-  if (throwErrors) {
-    throw errorGenericFindLongestZeroHextetChain;
-  }
+  if (throwErrors) throw errorGenericFindLongestZeroHextetChain;
   return null;
 }
 
