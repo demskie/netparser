@@ -1,22 +1,22 @@
 import * as common from "./common";
 
-export const errorGenericAddrToArray = new Error("unable to convert IPv6 string to an array");
-export const errorGenericArrayToAddr = new Error("unable to convert IPv6 array to string");
+export const errorGenericAddrToBytes = new Error("unable to convert IPv6 string to bytes");
+export const errorGenericBytesToAddr = new Error("unable to convert IPv6 bytes to string");
 export const errorGenericFindLongestZeroHextetChain = new Error("unable to findLongestZeroHextetChain");
 export const errorGenericPadZeros = new Error("unable to padZeros for IPv6 address");
 
-function padZeros(v6Addr: string, throwErrors?: boolean) {
-  if (v6Addr.length >= 2) {
-    if (v6Addr.slice(0, 2) === "::") {
-      v6Addr = "0" + v6Addr;
+function padZeros(addr: string, throwErrors?: boolean) {
+  if (addr.length >= 2) {
+    if (addr.slice(0, 2) === "::") {
+      addr = "0" + addr;
     }
-    if (v6Addr.slice(v6Addr.length - 2) === "::") {
-      v6Addr += "0";
+    if (addr.slice(addr.length - 2) === "::") {
+      addr += "0";
     }
   }
-  const splitAddr = v6Addr.split("::");
+  const splitAddr = addr.split("::");
   if (splitAddr.length === 1) {
-    return v6Addr;
+    return addr;
   } else if (splitAddr.length === 2) {
     const hextetCount = splitAddr[0].split(":").length + splitAddr[1].split(":").length;
     splitAddr[0] += common.repeatString(":0", 8 - hextetCount);
@@ -32,8 +32,8 @@ function padZeros(v6Addr: string, throwErrors?: boolean) {
 // 2001:db8:122:344::/96     192.0.2.33    2001:db8:122:344::192.0.2.33
 // https://tools.ietf.org/html/rfc6052
 
-export function convertEmbeddedIPv4(v6Addr: string) {
-  let hextets = v6Addr.split(":");
+export function convertEmbeddedIPv4(addr: string) {
+  let hextets = addr.split(":");
   const octets = hextets[hextets.length - 1].split(".");
   if (octets.length === 4) {
     const a = parseInt(octets[0], 10).toString(16);
@@ -43,17 +43,17 @@ export function convertEmbeddedIPv4(v6Addr: string) {
     hextets = hextets.slice(0, hextets.length - 1);
     hextets.push(parseInt(a + b, 16).toString(16));
     hextets.push(parseInt(c + d, 16).toString(16));
-    v6Addr = hextets.join(":");
+    addr = hextets.join(":");
   }
-  return v6Addr;
+  return addr;
 }
 
-export function addrToArray(v6Addr: string, throwErrors?: boolean) {
-  const padded = padZeros(v6Addr);
+export function addrToBytes(addr: string, throwErrors?: boolean) {
+  const padded = padZeros(addr);
   if (padded !== null) {
     const hextets = padded.split(":");
     if (hextets.length === 8) {
-      const arr = new Array(16);
+      const arr = new Uint8Array(16);
       for (var j = 0; j < 8; j++) {
         const hextet = hextets[j];
         switch (hextet.length) {
@@ -64,33 +64,29 @@ export function addrToArray(v6Addr: string, throwErrors?: boolean) {
             break;
           case 3:
           case 4:
-            arr[2 * j + 1] = parseInt(hextet, 16);
-            arr[2 * j] = Math.floor(arr[2 * j + 1] / 256);
-            arr[2 * j + 1] %= 256;
+            const val = parseInt(hextet, 16);
+            arr[2 * j] = Math.floor(val / 256);
+            arr[2 * j + 1] = val % 256;
             break;
           default:
-            if (throwErrors) {
-              throw errorGenericAddrToArray;
-            }
+            if (throwErrors) throw errorGenericAddrToBytes;
             return null;
         }
       }
       return arr;
     }
   }
-  if (throwErrors) {
-    throw errorGenericAddrToArray;
-  }
+  if (throwErrors) throw errorGenericAddrToBytes;
   return null;
 }
 
-function findLongestZeroHextetChain(arr: number[], throwErrors?: boolean) {
-  if (arr.length >= 16) {
-    arr = arr.slice(arr.length - 16);
+function findLongestZeroHextetChain(bytes: Uint8Array, throwErrors?: boolean) {
+  if (bytes.length >= 16) {
+    bytes = bytes.subarray(bytes.length - 16);
     const canidate = { start: 0, length: 0 };
     const longest = { start: 0, length: 0 };
-    for (var i = 0; i < arr.length; i += 2) {
-      if (arr[i] !== 0 || arr[i + 1] !== 0) {
+    for (var i = 0; i < bytes.length; i += 2) {
+      if (bytes[i] !== 0 || bytes[i + 1] !== 0) {
         canidate.start = 0;
         canidate.length = 0;
       } else {
@@ -112,8 +108,8 @@ function findLongestZeroHextetChain(arr: number[], throwErrors?: boolean) {
   return null;
 }
 
-export function arrayToAddr(arr: number[], throwErrors?: boolean) {
-  const longestHextetChain = findLongestZeroHextetChain(arr, throwErrors);
+export function bytesToAddr(bytes: Uint8Array, throwErrors?: boolean) {
+  const longestHextetChain = findLongestZeroHextetChain(bytes, throwErrors);
   if (longestHextetChain !== null) {
     var result = "";
     for (var i = 0; i < 16; i += 2) {
@@ -121,14 +117,12 @@ export function arrayToAddr(arr: number[], throwErrors?: boolean) {
         result += i === 0 ? "::" : ":";
         i += longestHextetChain.length - 2;
       } else {
-        result += (arr[i] * 256 + arr[i + 1]).toString(16);
+        result += (bytes[i] * 256 + bytes[i + 1]).toString(16);
         result += i === 14 ? "" : ":";
       }
     }
     return result;
   }
-  if (throwErrors) {
-    throw errorGenericArrayToAddr;
-  }
+  if (throwErrors) throw errorGenericBytesToAddr;
   return null;
 }

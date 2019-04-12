@@ -8,9 +8,9 @@ export function parseIP(s: string, throwErrors?: boolean) {
     s = common.removeBrackets(s);
     const ip = common.removeCIDR(s, throwErrors);
     if (ip !== null) {
-      const arr = v6.addrToArray(ip, throwErrors);
-      if (arr !== null) {
-        return v6.arrayToAddr(arr, throwErrors);
+      const bytes = v6.addrToBytes(ip, throwErrors);
+      if (bytes !== null) {
+        return v6.bytesToAddr(bytes, throwErrors);
       }
     }
     return null;
@@ -18,9 +18,9 @@ export function parseIP(s: string, throwErrors?: boolean) {
   // otherwise assume it's an IPv4 address
   const ip = common.removeCIDR(s, throwErrors);
   if (ip !== null) {
-    const arr = v4.addrToArray(s, throwErrors);
-    if (arr !== null) {
-      return v4.arrayToAddr(arr, throwErrors);
+    const bytes = v4.addrToBytes(s, throwErrors);
+    if (bytes !== null) {
+      return v4.bytesToAddr(bytes, throwErrors);
     }
   }
   return null;
