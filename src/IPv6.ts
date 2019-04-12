@@ -28,6 +28,26 @@ function padZeros(v6Addr: string, throwErrors?: boolean) {
   return null;
 }
 
+// Network-Specific Prefix   IPv4          IPv4-embedded IPv6 address
+// 2001:db8:122:344::/96     192.0.2.33    2001:db8:122:344::192.0.2.33
+// https://tools.ietf.org/html/rfc6052
+
+export function convertEmbeddedIPv4(v6Addr: string) {
+  let hextets = v6Addr.split(":");
+  const v4Octets = hextets[hextets.length - 1].split(".");
+  if (v4Octets.length === 4) {
+    const a = parseInt(v4Octets[0], 10).toString(16);
+    const b = parseInt(v4Octets[1], 10).toString(16);
+    const c = parseInt(v4Octets[2], 10).toString(16);
+    const d = parseInt(v4Octets[3], 10).toString(16);
+    hextets = hextets.slice(0, hextets.length - 1);
+    hextets.push(parseInt(a + b, 16).toString(16));
+    hextets.push(parseInt(c + d, 16).toString(16));
+    v6Addr = hextets.join(":");
+  }
+  return v6Addr;
+}
+
 export function addrToArray(v6Addr: string, throwErrors?: boolean) {
   const padded = padZeros(v6Addr);
   if (padded !== null) {
