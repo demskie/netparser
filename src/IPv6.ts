@@ -34,12 +34,12 @@ function padZeros(v6Addr: string, throwErrors?: boolean) {
 
 export function convertEmbeddedIPv4(v6Addr: string) {
   let hextets = v6Addr.split(":");
-  const v4Octets = hextets[hextets.length - 1].split(".");
-  if (v4Octets.length === 4) {
-    const a = parseInt(v4Octets[0], 10).toString(16);
-    const b = parseInt(v4Octets[1], 10).toString(16);
-    const c = parseInt(v4Octets[2], 10).toString(16);
-    const d = parseInt(v4Octets[3], 10).toString(16);
+  const octets = hextets[hextets.length - 1].split(".");
+  if (octets.length === 4) {
+    const a = parseInt(octets[0], 10).toString(16);
+    const b = parseInt(octets[1], 10).toString(16);
+    const c = parseInt(octets[2], 10).toString(16);
+    const d = parseInt(octets[3], 10).toString(16);
     hextets = hextets.slice(0, hextets.length - 1);
     hextets.push(parseInt(a + b, 16).toString(16));
     hextets.push(parseInt(c + d, 16).toString(16));
