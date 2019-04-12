@@ -80,7 +80,7 @@ export function offsetAddressWithCIDR(bytes: Uint8Array, cidr: number, throwErro
 }
 
 export function applySubnetMask(bytes: Uint8Array, cidr: number) {
-  const maskBits = bytes.length * 8 - cidr;
+  let maskBits = bytes.length * 8 - cidr;
   for (var i = bytes.length - 1; i >= 0; i--) {
     switch (Math.min(8, maskBits)) {
       case 0:
@@ -110,7 +110,7 @@ export function applySubnetMask(bytes: Uint8Array, cidr: number) {
         bytes[i] = 0;
         break;
     }
-    return bytes;
+    maskBits -= 8;
   }
   return bytes;
 }

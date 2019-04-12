@@ -11,3 +11,14 @@ test("sanity check IPv6 offset by /128", () => {
     throw new Error(`'${output}' !== '${expected}'`);
   }
 });
+
+test("sanity check IPv6 applySubnetMask()", () => {
+  const input = "b011:a2c2:7328:cc01:4ee7:e2ec:6269:babf";
+  let bytes = ipv6.addrToBytes(input, true);
+  bytes = common.applySubnetMask(bytes, 64);
+  const output = ipv6.bytesToAddr(bytes, true);
+  const expected = "b011:a2c2:7328:cc01::";
+  if (output !== expected) {
+    throw new Error(`'${output}' !== '${expected}'`);
+  }
+});

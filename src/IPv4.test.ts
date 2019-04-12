@@ -58,3 +58,14 @@ test("throw IPv4 address space overflow error", () => {
     throw new Error(`unexpected: ${err}`);
   }
 });
+
+test("sanity check IPv4 applySubnetMask()", () => {
+  const input = "192.168.0.248";
+  let bytes = ipv4.addrToBytes(input, true);
+  bytes = common.applySubnetMask(bytes, 16);
+  const output = ipv4.bytesToAddr(bytes, true);
+  const expected = "192.168.0.0";
+  if (output !== expected) {
+    throw new Error(`'${output}' !== '${expected}'`);
+  }
+});
