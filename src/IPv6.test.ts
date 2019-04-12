@@ -4,9 +4,20 @@ import * as ipv6 from "./IPv6";
 test("sanity check IPv6 offset by /128", () => {
   const input = "2001:db8:122:344::";
   let bytes = ipv6.addrToBytes(input, true);
-  bytes = common.offsetAddressWithCIDR(bytes, 128, true);
+  bytes = common.increaseAddressWithCIDR(bytes, 128, true);
   const output = ipv6.bytesToAddr(bytes, true);
   const expected = "2001:db8:122:344::1";
+  if (output !== expected) {
+    throw new Error(`'${output}' !== '${expected}'`);
+  }
+});
+
+test("sanity check IPv6 negative offset by /128", () => {
+  const input = "2001:db8:122:344::";
+  let bytes = ipv6.addrToBytes(input, true);
+  bytes = common.decreaseAddressWithCIDR(bytes, 128, true);
+  const output = ipv6.bytesToAddr(bytes, true);
+  const expected = "2001:db8:122:343:ffff:ffff:ffff:ffff";
   if (output !== expected) {
     throw new Error(`'${output}' !== '${expected}'`);
   }

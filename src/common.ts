@@ -51,23 +51,37 @@ export function addressPosition(a: Uint8Array, b: Uint8Array) {
   return 0;
 }
 
-export function offsetAddressWithCIDR(bytes: Uint8Array, cidr: number, throwErrors?: boolean): Uint8Array | null {
-  if (cidr > 0 && (bytes.length === 4 || bytes.length === 16)) {
-    const targetByte = Math.floor((cidr - 1) / 8);
-    if (targetByte < bytes.length) {
-      const increment = Math.pow(2, 8 - (cidr - targetByte * 8));
-      const unconstrained = bytes[targetByte] + increment;
-      bytes[targetByte] = unconstrained % 256;
-      if (unconstrained < 256) {
-        return bytes;
-      }
-      if (targetByte > 0) {
-        const supernetCIDR = targetByte * 8;
-        return offsetAddressWithCIDR(bytes, supernetCIDR, throwErrors);
-      }
-      if (throwErrors) throw errorOverflowedAddressSpace;
-      return null;
+function offsetAddress(bytes: Uint8Array, cidr: number, isPositive: boolean, throwErrors?: boolean): Uint8Array | null {
+  const targetByte = Math.floor((cidr - 1) / 8);
+  if (targetByte < bytes.length) {
+    const increment = Math.pow(2, 8 - (cidr - targetByte * 8));
+    const unconstrained = bytes[targetByte] + increment * (isPositive ? 1 : -1);
+    bytes[targetByte] = unconstrained % 256;
+    if (0 <= unconstrained && unconstrained <= 255) {
+      return bytes;
     }
+    if (targetByte > 0) {
+      const supernetCIDR = targetByte * 8;
+      return offsetAddress(bytes, supernetCIDR, isPositive, throwErrors);
+    }
+    if (throwErrors) throw errorOverflowedAddressSpace;
+    return null;
+  }
+  if (throwErrors) throw errorGenericOffsetAddressWithCIDR;
+  return null;
+}
+
+export function increaseAddressWithCIDR(bytes: Uint8Array, cidr: number, throwErrors?: boolean) {
+  if (cidr > 0 && (bytes.length === 4 || bytes.length === 16)) {
+    return offsetAddress(bytes, cidr, true, throwErrors);
+  }
+  if (throwErrors) throw errorGenericOffsetAddressWithCIDR;
+  return null;
+}
+
+export function decreaseAddressWithCIDR(bytes: Uint8Array, cidr: number, throwErrors?: boolean) {
+  if (cidr > 0 && (bytes.length === 4 || bytes.length === 16)) {
+    return offsetAddress(bytes, cidr, false, throwErrors);
   }
   if (throwErrors) throw errorGenericOffsetAddressWithCIDR;
   return null;
