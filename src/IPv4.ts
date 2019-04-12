@@ -8,7 +8,7 @@ export const errorArrayToAddrNotFourElements = new Error("'arr' was not at least
 export function addrToArray(v4Addr: string, throwErrors?: boolean) {
   const addr = v4Addr.split(".");
   if (addr.length === 4) {
-    const arr = new Array(4);
+    const arr = new Array(4) as number[];
     for (var i = 0; i < 4; i++) {
       arr[i] = parseInt(addr[i], 10);
       if (arr[i] < 0 || arr[i] > 255) {

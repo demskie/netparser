@@ -1,5 +1,6 @@
 export const errorGenericRemoveCIDR = new Error("more than one '/' was detected");
 export const errorGenericOffsetArrayWithCIDR = new Error("unable to offset array");
+export const errorOverflowedAddressSpace = new Error("address space overflow detected");
 
 export function repeatString(s: string, count: number) {
   var result = "";
@@ -46,10 +47,10 @@ export function offsetArrayWithCIDR(arr: number[], cidr: number, throwErrors?: b
         arr[targetByte] %= 256;
         if (targetByte > 0) {
           const fixOverflowCIDR = targetByte * 8;
-          return offsetArrayWithCIDR(arr, fixOverflowCIDR);
+          return offsetArrayWithCIDR(arr, fixOverflowCIDR, throwErrors);
         }
         if (throwErrors) {
-          throw errorGenericOffsetArrayWithCIDR;
+          throw errorOverflowedAddressSpace;
         }
         return null;
       }
