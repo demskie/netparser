@@ -1,0 +1,9 @@
+{
+  "mode": "modules",
+  "out": "docs",
+  "name": "netparser",
+  "theme": "markdown",
+  "ignoreCompilerErrors": "true",
+  "target": "ES5",
+  "entryPoint": "\"index\""
+}

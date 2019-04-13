@@ -4,7 +4,8 @@
   "description": "parse and manipulate network addresses",
   "main": "index.js",
   "scripts": {
-    "build": "node_modules/.bin/tsc && node_modules/.bin/jest --coverage"
+    "build": "node_modules/.bin/tsc && node_modules/.bin/jest --coverage",
+    "docs": "node_modules/.bin/typedoc --out ./ src/"
   },
   "repository": {
     "type": "git",
@@ -71,6 +72,8 @@
     "jest": "^24.7.1",
     "prettier": "^1.16.4",
     "ts-jest": "^24.0.2",
+    "typedoc": "^0.14.2",
+    "typedoc-plugin-markdown": "^1.2.0",
     "typescript": "^3.4.2"
   },
   "dependencies": {}
