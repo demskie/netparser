@@ -16,9 +16,9 @@ test("sanity check IPv6", () => {
   }
 });
 
-test("sanity check IPv4 subnetZero", () => {
+test("sanity check IPv4 baseAddress", () => {
   const input = "192.168.200.113/24";
-  const output = index.subnetZero(input, true);
+  const output = index.baseAddress(input, true);
   const expected = "192.168.200.0";
   if (output !== expected) {
     throw new Error(`'${output}' !== '${expected}'`);
