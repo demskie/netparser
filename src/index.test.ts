@@ -15,3 +15,12 @@ test("sanity check IPv6", () => {
     throw new Error(`'${input}' !== '${output}'`);
   }
 });
+
+test("sanity check IPv4 subnetZero", () => {
+  const input = "192.168.200.113/24";
+  const output = index.subnetZero(input, true);
+  const expected = "192.168.200.0";
+  if (output !== expected) {
+    throw new Error(`'${output}' !== '${expected}'`);
+  }
+});

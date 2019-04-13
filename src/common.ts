@@ -1,4 +1,5 @@
 export const errorGenericRemoveCIDR = new Error("more than one '/' was detected");
+export const errorGenericGetCIDR = new Error("unable to get CIDR from subnet string");
 export const errorGenericOffsetAddressWithCIDR = new Error("unable to offset address");
 export const errorOverflowedAddressSpace = new Error("address space overflow detected");
 
@@ -20,6 +21,18 @@ export function removeCIDR(s: string, throwErrors?: boolean) {
       return splitAddr[0];
   }
   if (throwErrors) throw errorGenericRemoveCIDR;
+  return null;
+}
+
+export function getCIDR(s: string, throwErrors?: boolean) {
+  const splitAddr = s.split("/");
+  if (splitAddr.length === 2) {
+    const val = parseInt(splitAddr[1], 10);
+    if (Number.isInteger(val)) {
+      return val;
+    }
+  }
+  if (throwErrors) throw errorGenericGetCIDR;
   return null;
 }
 
