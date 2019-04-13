@@ -10,6 +10,7 @@ import * as common from "./common";
  *
  * @param s - An address (192.168.0.0) or subnet (192.168.0.0/24)
  * @param throwErrors - Stop the library from failing silently
+ *
  * @returns The parsed IP address or null in case of error
  */
 export function ip(s: string, throwErrors?: boolean) {
@@ -42,6 +43,7 @@ export function ip(s: string, throwErrors?: boolean) {
  *
  * @param s - The subnet (192.168.0.0/24)
  * @param throwErrors - Stop the library from failing silently
+ *
  * @returns The first address in a subnet or null in case of error
  */
 export function subnetZero(s: string, throwErrors?: boolean) {

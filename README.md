@@ -1,60 +1,18 @@
-
-
-## Index
-
-### Functions
-
-* [ip](#ip)
-* [subnetZero](#subnetzero)
-
----
-
-## Functions
-
-<a id="ip"></a>
-
-###  ip
-
-▸ **ip**(s: *`string`*, throwErrors?: *`undefined` \| `false` \| `true`*): `null` \| `string`
-
-*Defined in [index.ts:15](https://github.com/demskie/netparser/blob/222a0b7/src/index.ts#L15)*
-
-Parse an IP address
-
-*__remarks__*: Verify that an external source provided a valid IP address
-
-**Parameters:**
-
-| Name | Type | Description |
-| ------ | ------ | ------ |
-| s | `string` |  An address (192.168.0.0) or subnet (192.168.0.0/24) |
-| `Optional` throwErrors | `undefined` \| `false` \| `true` |  Stop the library from failing silently |
-
-**Returns:** `null` \| `string`
-The parsed IP address or null in case of error
-
-___
-<a id="subnetzero"></a>
-
-###  subnetZero
-
-▸ **subnetZero**(s: *`string`*, throwErrors?: *`undefined` \| `false` \| `true`*): `null` \| `string`
-
-*Defined in [index.ts:47](https://github.com/demskie/netparser/blob/222a0b7/src/index.ts#L47)*
-
-Given a random subnet address, what is it's network address
-
-*__example__*: netparser.subnetZero("192.168.0.4/24") // returns 192.168.0.0
-
-**Parameters:**
-
-| Name | Type | Description |
-| ------ | ------ | ------ |
-| s | `string` |  The subnet (192.168.0.0/24) |
-| `Optional` throwErrors | `undefined` \| `false` \| `true` |  Stop the library from failing silently |
-
-**Returns:** `null` \| `string`
-The first address in a subnet or null in case of error
-
-___
-
+### API
+Docs generated using [`docts`](https://github.com/charto/docts)
+>
+> <a name="api-ip"></a>
+> ### Function [`ip`](#api-ip)
+> <em>Parse an IP address</em>  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L16-L36)  
+> > **ip( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L16-L36)  
+> > &emsp;&#x25aa; s <sup><code>string</code></sup> <em>- An address (192.168.0.0) or subnet (192.168.0.0/24)</em>  
+> > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
+>
+> <a name="api-subnetZero"></a>
+> ### Function [`subnetZero`](#api-subnetZero)
+> <em>Given a random subnet address, what is it's network address</em>  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L49-L75)  
+> > **subnetZero( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L49-L75)  
+> > &emsp;&#x25aa; s <sup><code>string</code></sup> <em>- The subnet (192.168.0.0/24)</em>  
+> > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
