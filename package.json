@@ -1,74 +1,79 @@
 {
-    "name": "netparser",
-    "version": "0.0.1",
-    "description": "parse and manipulate network addresses",
-    "main": "index.js",
-    "scripts": {
-        "test": "jest",
-        "build": "tsc"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/demskie/netparser.git"
-    },
-    "files": [
-        "lib/**/*"
+  "name": "netparser",
+  "version": "0.0.1",
+  "description": "parse and manipulate network addresses",
+  "main": "index.js",
+  "scripts": {
+    "test": "node_modules/.bin/jest",
+    "coverage": "node_modules/.bin/jest --coverage",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/demskie/netparser.git"
+  },
+  "files": [
+    "lib/**/*"
+  ],
+  "keywords": [
+    "subnet",
+    "network",
+    "ip",
+    "ipv4",
+    "ipv6"
+  ],
+  "author": "Alex Demskie",
+  "license": "MIT",
+  "homepage": "https://github.com/demskie/netparser#readme",
+  "bugs": {
+    "url": "https://github.com/demskie/netparser/issues"
+  },
+  "jest": {
+    "roots": [
+      "<rootDir>/src"
     ],
-    "keywords": [
-        "subnet",
-        "network",
-        "ip",
-        "ipv4",
-        "ipv6"
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "testRegex": [
+      ".*test\\.ts",
+      ".*bench\\.ts"
     ],
-    "author": "Alex Demskie",
-    "license": "MIT",
-    "homepage": "https://github.com/demskie/netparser#readme",
-    "bugs": {
-        "url": "https://github.com/demskie/netparser/issues"
+    "moduleFileExtensions": [
+      "ts",
+      "js",
+      "json",
+      "node"
+    ],
+    "globals": {
+      "ts-jest": {
+        "tsConfig": "tsconfig.json",
+        "diagnostics": false
+      }
     },
-    "jest": {
-        "roots": [
-            "<rootDir>/src"
-        ],
-        "transform": {
-            "^.+\\.(ts|tsx)$": "ts-jest"
-        },
-        "testRegex": [
-            ".*test\\.ts"
-        ],
-        "moduleFileExtensions": [
-            "ts",
-            "js",
-            "json",
-            "node"
-        ],
-        "globals": {
-            "ts-jest": {
-                "tsConfig": "tsconfig.json",
-                "diagnostics": false
-            }
-        },
-        "testPathIgnorePatterns": [
-            "<rootDir>/node_modules/",
-            "<rootDir>/config/",
-            "<rootDir>/build/"
-        ],
-        "collectCoverageFrom": [
-            "<rootDir>/**/*.{ts}"
-        ]
-    },
-    "devDependencies": {
-        "@types/jest": "^24.0.11",
-        "@typescript-eslint/eslint-plugin": "^1.6.0",
-        "@typescript-eslint/parser": "^1.6.0",
-        "eslint": "^5.16.0",
-        "eslint-config-prettier": "^4.1.0",
-        "eslint-plugin-prettier": "^3.0.1",
-        "jest": "^24.7.1",
-        "prettier": "^1.16.4",
-        "ts-jest": "^24.0.2",
-        "typescript": "^3.4.2"
-    },
-    "dependencies": {}
+    "testPathIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/config/",
+      "<rootDir>/build/"
+    ],
+    "collectCoverage": false,
+    "collectCoverageFrom": [
+      "**/*.ts",
+      "!**/node_modules/**",
+      "!**/vendor/**"
+    ]
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.11",
+    "@typescript-eslint/eslint-plugin": "^1.6.0",
+    "@typescript-eslint/parser": "^1.6.0",
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^4.1.0",
+    "eslint-plugin-prettier": "^3.0.1",
+    "jest": "^24.7.1",
+    "prettier": "^1.16.4",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.4.2"
+  },
+  "dependencies": {}
 }
