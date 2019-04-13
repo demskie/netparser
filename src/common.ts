@@ -31,24 +31,30 @@ export function duplicateAddress(bytes: Uint8Array) {
   return bytes.slice();
 }
 
-export function addressPosition(a: Uint8Array, b: Uint8Array) {
+export enum compareResult {
+  before,
+  equals,
+  after
+}
+
+export function compareAddresses(a: Uint8Array, b: Uint8Array) {
   if (a !== b) {
     const alpha = a.length >= b.length ? a : b;
     const bravo = a.length >= b.length ? b : a;
     for (var i = alpha.length - 1; i >= 0; i--) {
       if (i < bravo.length) {
         if (alpha[i] > bravo[i]) {
-          return 1;
+          return compareResult.after;
         }
         if (alpha[i] < bravo[i]) {
-          return -1;
+          return compareResult.before;
         }
       } else if (alpha[i] > 0) {
-        return 1;
+        return compareResult.after;
       }
     }
   }
-  return 0;
+  return compareResult.equals;
 }
 
 function offsetAddress(bytes: Uint8Array, cidr: number, isPositive: boolean, throwErrors?: boolean): Uint8Array | null {
