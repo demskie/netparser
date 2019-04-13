@@ -4,9 +4,7 @@
   "description": "parse and manipulate network addresses",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/.bin/jest",
-    "coverage": "node_modules/.bin/jest --coverage",
-    "build": "tsc"
+    "build": "node_modules/.bin/tsc && node_modules/.bin/jest --coverage"
   },
   "repository": {
     "type": "git",
