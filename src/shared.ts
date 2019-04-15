@@ -1,7 +1,28 @@
+import * as v4 from "./IPv4";
+import * as v6 from "./IPv6";
+
 export const errorGenericRemoveCIDR = new Error("more than one '/' was detected");
 export const errorGenericGetCIDR = new Error("unable to get CIDR from subnet string");
 export const errorGenericOffsetAddressWithCIDR = new Error("unable to offset address");
 export const errorOverflowedAddressSpace = new Error("address space overflow detected");
+
+export function hasColon(s: string) {
+  return s.search(":") >= 0;
+}
+
+export function addrToBytes(addr: string, throwErrors?: boolean) {
+  if (hasColon(addr)) {
+    return v6.addrToBytes(addr, throwErrors);
+  }
+  return v4.addrToBytes(addr, throwErrors);
+}
+
+export function bytesToAddr(bytes: Uint8Array, throwErrors?: boolean) {
+  if (bytes.length === 16) {
+    return v6.bytesToAddr(bytes, throwErrors);
+  }
+  return v4.bytesToAddr(bytes, throwErrors);
+}
 
 export function repeatString(s: string, count: number) {
   var result = "";
@@ -44,30 +65,35 @@ export function duplicateAddress(bytes: Uint8Array) {
   return bytes.slice();
 }
 
-export enum compareResult {
-  before,
-  equals,
-  after
+export function setAddress(src: Uint8Array, dst: Uint8Array) {
+  for (var i = 0; i < src.length; i++) {
+    if (i < dst.length) {
+      dst[i] = src[i];
+    } else {
+      return;
+    }
+  }
+}
+
+export enum cmp {
+  before = -1,
+  equals = 0,
+  after = 1
 }
 
 export function compareAddresses(a: Uint8Array, b: Uint8Array) {
   if (a !== b) {
-    const alpha = a.length >= b.length ? a : b;
-    const bravo = a.length >= b.length ? b : a;
-    for (var i = alpha.length - 1; i >= 0; i--) {
-      if (i < bravo.length) {
-        if (alpha[i] > bravo[i]) {
-          return compareResult.after;
-        }
-        if (alpha[i] < bravo[i]) {
-          return compareResult.before;
-        }
-      } else if (alpha[i] > 0) {
-        return compareResult.after;
-      }
+    if (a.length < b.length) {
+      return cmp.before;
+    } else if (a.length > b.length) {
+      return cmp.after;
+    }
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] < b[i]) return cmp.before;
+      if (a[i] > b[i]) return cmp.after;
     }
   }
-  return compareResult.equals;
+  return cmp.equals;
 }
 
 function offsetAddress(bytes: Uint8Array, cidr: number, isPositive: boolean, throwErrors?: boolean): Uint8Array | null {
@@ -109,7 +135,7 @@ export function decreaseAddressWithCIDR(bytes: Uint8Array, cidr: number, throwEr
 export function applySubnetMask(bytes: Uint8Array, cidr: number) {
   let maskBits = bytes.length * 8 - cidr;
   for (var i = bytes.length - 1; i >= 0; i--) {
-    switch (Math.min(8, maskBits)) {
+    switch (Math.max(0, Math.min(8, maskBits))) {
       case 0:
         return bytes;
       case 1:

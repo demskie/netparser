@@ -1,4 +1,4 @@
-import * as common from "./common";
+import * as shared from "./shared";
 
 export const errorGenericAddrToBytes = new Error("unable to convert IPv6 string to bytes");
 export const errorGenericBytesToAddr = new Error("unable to convert IPv6 bytes to string");
@@ -19,7 +19,7 @@ function padZeros(addr: string, throwErrors?: boolean) {
     return addr;
   } else if (splitAddr.length === 2) {
     const hextetCount = splitAddr[0].split(":").length + splitAddr[1].split(":").length;
-    splitAddr[0] += common.repeatString(":0", 8 - hextetCount);
+    splitAddr[0] += shared.repeatString(":0", 8 - hextetCount);
     return splitAddr.join(":");
   }
   if (throwErrors) throw errorGenericPadZeros;

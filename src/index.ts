@@ -1,6 +1,6 @@
-import * as v4 from "./IPv4";
-import * as v6 from "./IPv6";
-import * as common from "./common";
+import * as shared from "./shared";
+
+export const errorMixingIPv4AndIPv6 = new Error("mixing IPv4 and IPv6 is invalid");
 
 /**
  * Parse an IP address
@@ -8,28 +8,49 @@ import * as common from "./common";
  * @remarks
  * Verify that an external source provided a valid IP address
  *
- * @param address - An address (192.168.0.0) or subnet (192.168.0.0/24)
+ * @param address - Either an address like 192.168.0.0 or subnet 192.168.0.0/24
  * @param throwErrors - Stop the library from failing silently
  *
  * @returns The parsed IP address or null in case of error
  */
 export function ip(address: string, throwErrors?: boolean) {
-  if (address.search(":") >= 0) {
-    address = common.removeBrackets(address);
-    const ip = common.removeCIDR(address, throwErrors);
-    if (ip !== null) {
-      const bytes = v6.addrToBytes(ip, throwErrors);
-      if (bytes !== null) {
-        return v6.bytesToAddr(bytes, throwErrors);
-      }
-    }
-    return null;
+  address = address.trim();
+  if (shared.hasColon(address)) {
+    address = shared.removeBrackets(address);
   }
-  const ip = common.removeCIDR(address, throwErrors);
+  const ip = shared.removeCIDR(address, throwErrors);
   if (ip !== null) {
-    const bytes = v4.addrToBytes(address, throwErrors);
+    const bytes = shared.addrToBytes(ip, throwErrors);
     if (bytes !== null) {
-      return v4.bytesToAddr(bytes, throwErrors);
+      return shared.bytesToAddr(bytes, throwErrors);
+    }
+  }
+  return null;
+}
+
+/**
+ * Parse a network address
+ *
+ * @remarks
+ * Verify that an external source provided a valid network address
+ *
+ * @param networkAddress - A network like 192.168.0.0/24
+ * @param throwErrors - Stop the library from failing silently
+ *
+ * @returns The parsed network address or null in case of error
+ */
+export function network(networkAddress: string, throwErrors?: boolean) {
+  networkAddress = networkAddress.trim();
+  if (shared.hasColon(networkAddress)) {
+    networkAddress = shared.removeBrackets(networkAddress);
+  }
+  const ip = shared.removeCIDR(networkAddress, throwErrors);
+  const cidr = shared.getCIDR(networkAddress, throwErrors);
+  if (ip !== null && cidr !== null) {
+    const bytes = shared.addrToBytes(ip, throwErrors);
+    if (bytes !== null) {
+      if (!shared.increaseAddressWithCIDR(bytes, cidr, throwErrors)) return null;
+      return shared.bytesToAddr(bytes, throwErrors);
     }
   }
   return null;
@@ -41,35 +62,86 @@ export function ip(address: string, throwErrors?: boolean) {
  * @example
  * netparser.baseAddress("192.168.0.4/24")  // returns 192.168.0.0
  *
- * @param networkAddress - (192.168.0.4/24)
+ * @param networkAddress - A network address like 192.168.0.4/24
  * @param throwErrors - Stop the library from failing silently
  *
  * @returns The first address in a subnet or null in case of error
  */
 export function baseAddress(networkAddress: string, throwErrors?: boolean) {
-  if (networkAddress.search(":") >= 0) {
-    networkAddress = common.removeBrackets(networkAddress);
-    const ip = common.removeCIDR(networkAddress, throwErrors);
-    const cidr = common.getCIDR(networkAddress, throwErrors);
-    if (ip !== null && cidr !== null) {
-      const bytes = v6.addrToBytes(ip, throwErrors);
-      if (bytes === null) {
-        return bytes;
-      }
-      common.applySubnetMask(bytes, cidr);
-      return v6.bytesToAddr(bytes, throwErrors);
+  networkAddress = networkAddress.trim();
+  if (shared.hasColon(networkAddress)) {
+    networkAddress = shared.removeBrackets(networkAddress);
+  }
+  const ip = shared.removeCIDR(networkAddress, throwErrors);
+  const cidr = shared.getCIDR(networkAddress, throwErrors);
+  if (ip !== null && cidr !== null) {
+    const bytes = shared.addrToBytes(ip, throwErrors);
+    if (bytes !== null) {
+      shared.applySubnetMask(bytes, cidr);
+      return shared.bytesToAddr(bytes, throwErrors);
     }
+  }
+  return null;
+}
+
+/**
+ * Returns an array of networks given a range of addresses
+ *
+ * @example
+ * netparser.rangeOfNetworks("192.168.1.2", "192.168.1.5")  // returns ["192.168.1.2/31", "192.168.1.4/31"]
+ *
+ * @param start - An address like 192.168.1.2
+ * @param stop - An address like 192.168.1.5
+ * @param throwErrors - Stop the library from failing silently
+ *
+ * @returns An array of networks or null in case of error
+ */
+export function rangeOfNetworks(startAddress: string, stopAddress: string, throwErrors?: boolean) {
+  let start = startAddress.trim();
+  let stop = stopAddress.trim();
+  const startHasColon = shared.hasColon(start);
+  const stopHasColon = shared.hasColon(stop);
+  if (startHasColon !== stopHasColon) {
+    if (throwErrors) throw errorMixingIPv4AndIPv6;
     return null;
   }
-  const ip = common.removeCIDR(networkAddress, throwErrors);
-  const cidr = common.getCIDR(networkAddress, throwErrors);
-  if (ip !== null && cidr !== null) {
-    const bytes = v4.addrToBytes(networkAddress, throwErrors);
-    if (bytes === null) {
-      return bytes;
+  if (startHasColon && stopHasColon) {
+    start = shared.removeBrackets(start);
+    stop = shared.removeBrackets(stop);
+  }
+  const startIP = shared.removeCIDR(start, throwErrors);
+  const stopIP = shared.removeCIDR(stop, throwErrors);
+  if (startIP !== null && stopIP !== null) {
+    let startBytes = shared.addrToBytes(startIP, throwErrors);
+    let stopBytes = shared.addrToBytes(stopIP, throwErrors);
+    if (startBytes !== null && stopBytes !== null) {
+      switch (shared.compareAddresses(startBytes, stopBytes)) {
+        case shared.cmp.equals:
+          return [start];
+        case shared.cmp.after:
+          [startBytes, stopBytes] = [stopBytes, startBytes];
+      }
+      var results = [] as string[];
+      const currentBytes = shared.duplicateAddress(startBytes);
+      while (shared.compareAddresses(currentBytes, stopBytes) <= 0) {
+        const addrString = shared.bytesToAddr(currentBytes, throwErrors);
+        var cidr = 1;
+        var bytesCopy = shared.duplicateAddress(currentBytes);
+        while (cidr < bytesCopy.length * 8) {
+          shared.increaseAddressWithCIDR(bytesCopy, cidr, throwErrors);
+          shared.decreaseAddressWithCIDR(bytesCopy, bytesCopy.length * 8, throwErrors);
+          if (shared.compareAddresses(bytesCopy, stopBytes) !== shared.cmp.after) {
+            shared.applySubnetMask(bytesCopy, cidr);
+            if (shared.compareAddresses(bytesCopy, currentBytes) === shared.cmp.equals) break;
+          }
+          shared.setAddress(currentBytes, bytesCopy);
+          cidr++;
+        }
+        results.push(`${addrString}/${cidr}`);
+        shared.increaseAddressWithCIDR(currentBytes, cidr, throwErrors);
+      }
+      return results;
     }
-    common.applySubnetMask(bytes, cidr);
-    return v4.bytesToAddr(bytes, throwErrors);
   }
   return null;
 }
