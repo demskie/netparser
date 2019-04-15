@@ -1,28 +1,18 @@
 import * as index from "./index";
 
 test("sanity check IPv4", () => {
-  const input = "255.255.255.255";
-  const output = index.ip(input);
-  if (input !== output) {
-    throw new Error(`'${input}' !== '${output}'`);
-  }
+  const output = index.ip("255.255.255.255", true);
+  expect(output).toEqual("255.255.255.255");
 });
 
 test("sanity check IPv6", () => {
-  const input = "ffff:fc00::1:1234";
-  const output = index.ip(input, true);
-  if (input !== output) {
-    throw new Error(`'${input}' !== '${output}'`);
-  }
+  const output = index.ip("ffff:fc00::1:1234", true);
+  expect(output).toEqual("ffff:fc00::1:1234");
 });
 
 test("sanity check IPv4 baseAddress", () => {
-  const input = "192.168.200.113/24";
-  const output = index.baseAddress(input, true);
-  const expected = "192.168.200.0";
-  if (output !== expected) {
-    throw new Error(`'${output}' !== '${expected}'`);
-  }
+  const output = index.baseAddress("192.168.200.113/24", true);
+  expect(output).toEqual("192.168.200.0");
 });
 
 test("sanity check IPv4 rangeOfNetworks", () => {
