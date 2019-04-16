@@ -1,4 +1,5 @@
 import * as index from "./index";
+import * as subnets from "./mockdata/subnets.json";
 
 test("sanity check IPv4", () => {
   const output = index.ip("255.255.255.255", true);
@@ -8,6 +9,15 @@ test("sanity check IPv4", () => {
 test("sanity check IPv6", () => {
   const output = index.ip("ffff:fc00::1:1234", true);
   expect(output).toEqual("ffff:fc00::1:1234");
+});
+
+test("sanity check network parsing", () => {
+  for (var input of subnets.valid as string[]) {
+    index.network(input, true);
+  }
+  for (var input of subnets.invalid as string[]) {
+    expect(index.network(input)).toEqual(null);
+  }
 });
 
 test("sanity check IPv4 baseAddress", () => {

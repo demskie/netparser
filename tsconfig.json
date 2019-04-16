@@ -12,7 +12,8 @@
     "strict": true,
     "newLine": "LF",
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "typeRoots": [ "node_modules/@types", "./typings.d.ts" ],
   },
   "include": ["src"],
   "exclude": ["node_modules", "**/*.test.ts", "**/*.bench.ts"]
