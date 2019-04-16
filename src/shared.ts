@@ -50,7 +50,8 @@ export function getCIDR(s: string, throwErrors?: boolean) {
   if (splitAddr.length === 2) {
     const val = parseInt(splitAddr[1], 10);
     if (Number.isInteger(val)) {
-      return val;
+      if (hasColon(splitAddr[0]) && 0 < val && val <= 128) return val;
+      if (0 < val && val <= 32) return val;
     }
   }
   if (throwErrors) throw errorGenericGetCIDR;
