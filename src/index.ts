@@ -51,8 +51,8 @@ export function network(networkAddress: string, throwErrors?: boolean) {
   if (ip !== null && cidr !== null) {
     const bytes = shared.addrToBytes(ip, throwErrors);
     if (bytes !== null) {
-      if (!shared.increaseAddressWithCIDR(bytes, cidr, throwErrors)) return null;
-      return shared.bytesToAddr(bytes, throwErrors);
+      const addr = shared.bytesToAddr(bytes, throwErrors);
+      if (addr) return `${addr}/${cidr}`;
     }
   }
   return null;
