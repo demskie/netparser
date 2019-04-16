@@ -6,6 +6,7 @@
   "parser": "@typescript-eslint/parser",
   "extends": ["plugin:@typescript-eslint/recommended", "prettier/@typescript-eslint", "plugin:prettier/recommended"],
   "rules": {
-    "@typescript-eslint/explicit-function-return-type": false
+    "@typescript-eslint/explicit-function-return-type": false,
+    "@typescript-eslint/no-object-literal-type-assertion": false
   }
 }

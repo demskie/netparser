@@ -118,9 +118,9 @@ export function rangeOfNetworks(startAddress: string, stopAddress: string, throw
     let stopBytes = shared.addrToBytes(stopIP, throwErrors);
     if (startBytes !== null && stopBytes !== null) {
       switch (shared.compareAddresses(startBytes, stopBytes)) {
-        case shared.cmp.equals:
+        case shared.Pos.equals:
           return [start];
-        case shared.cmp.after:
+        case shared.Pos.after:
           [startBytes, stopBytes] = [stopBytes, startBytes];
       }
       var results = [] as string[];
@@ -132,11 +132,11 @@ export function rangeOfNetworks(startAddress: string, stopAddress: string, throw
         while (cidr < bytesCopy.length * 8) {
           shared.increaseAddressWithCIDR(bytesCopy, cidr, throwErrors);
           shared.decreaseAddressWithCIDR(bytesCopy, bytesCopy.length * 8, throwErrors);
-          if (shared.compareAddresses(bytesCopy, stopBytes) !== shared.cmp.after) {
+          if (shared.compareAddresses(bytesCopy, stopBytes) !== shared.Pos.after) {
             shared.applySubnetMask(bytesCopy, cidr);
-            if (shared.compareAddresses(bytesCopy, currentBytes) === shared.cmp.equals) break;
+            if (shared.compareAddresses(bytesCopy, currentBytes) === shared.Pos.equals) break;
           }
-          shared.setAddress(currentBytes, bytesCopy);
+          shared.setAddress(bytesCopy, currentBytes);
           cidr++;
         }
         results.push(`${addrString}/${cidr}`);
@@ -163,50 +163,18 @@ export function rangeOfNetworks(startAddress: string, stopAddress: string, throw
  * @returns A boolean or null in case of error
  */
 export function networkComesBefore(network: string, otherNetwork: string, strict?: boolean, throwErrors?: boolean) {
-  let alpha = network.trim();
-  let bravo = otherNetwork.trim();
-  if (shared.hasColon(alpha)) {
-    alpha = shared.removeBrackets(alpha);
-  }
-  if (shared.hasColon(bravo)) {
-    bravo = shared.removeBrackets(bravo);
-  }
-  if (alpha === bravo) return false;
-  const alphaIP = shared.removeCIDR(alpha, throwErrors);
-  if (!alphaIP) return null;
-  const bravoIP = shared.removeCIDR(bravo, throwErrors);
-  if (!bravoIP) return null;
-  const alphaCIDR = shared.getCIDR(alpha, throwErrors);
-  if (!alphaCIDR) return null;
-  const bravoCIDR = shared.getCIDR(bravo, throwErrors);
-  if (!bravoCIDR) return null;
-  const alphaBytes = shared.addrToBytes(alphaIP);
-  if (!alphaBytes) return null;
-  const bravoBytes = shared.addrToBytes(bravoIP);
-  if (!bravoBytes) return null;
-  if (!strict) {
-    shared.applySubnetMask(alphaBytes, alphaCIDR);
-    shared.applySubnetMask(bravoBytes, bravoCIDR);
-  } else {
-    const alphaBytesCopy = shared.duplicateAddress(alphaBytes);
-    const bravoBytesCopy = shared.duplicateAddress(bravoBytes);
-    shared.applySubnetMask(alphaBytes, alphaCIDR);
-    shared.applySubnetMask(bravoBytes, bravoCIDR);
-    if (
-      shared.compareAddresses(alphaBytes, alphaBytesCopy) !== 0 ||
-      shared.compareAddresses(bravoBytes, bravoBytesCopy) !== 0
-    ) {
-      if (throwErrors) throw errorNotValidBaseNetworkAddress;
-      return null;
-    }
-  }
-  switch (shared.compareAddresses(alphaBytes, bravoBytes)) {
-    case shared.cmp.before:
+  const garbage = new Uint8Array(16);
+  const net = shared.parseNetworkString(network, strict, throwErrors, garbage);
+  if (!net) return null;
+  const otherNet = shared.parseNetworkString(network, strict, throwErrors, garbage);
+  if (!otherNet) return null;
+  switch (shared.compareAddresses(net.bytes, otherNet.bytes)) {
+    case shared.Pos.before:
       return true;
-    case shared.cmp.after:
+    case shared.Pos.after:
       return false;
   }
-  if (alphaCIDR < bravoCIDR) return true;
+  if (net.cidr < otherNet.cidr) return true;
   return false;
 }
 
@@ -223,31 +191,12 @@ export function networkComesBefore(network: string, otherNetwork: string, strict
  * @returns A network string or null in case of error
  */
 export function nextNetwork(network: string, strict?: boolean, throwErrors?: boolean) {
-  network = network.trim();
-  if (shared.hasColon(network)) {
-    network = shared.removeBrackets(network);
-  }
-  const ip = shared.removeCIDR(network, throwErrors);
-  const cidr = shared.getCIDR(network, throwErrors);
-  if (ip !== null && cidr !== null) {
-    const bytes = shared.addrToBytes(ip, throwErrors);
-    if (bytes !== null) {
-      if (!strict) {
-        shared.applySubnetMask(bytes, cidr);
-      } else {
-        const bytesCopy = shared.duplicateAddress(bytes);
-        shared.applySubnetMask(bytes, cidr);
-        if (shared.compareAddresses(bytes, bytesCopy) !== 0) {
-          if (throwErrors) throw errorNotValidBaseNetworkAddress;
-          return null;
-        }
-      }
-      if (!shared.increaseAddressWithCIDR(bytes, cidr, throwErrors)) return null;
-      const addr = shared.bytesToAddr(bytes, throwErrors);
-      if (addr) return `${addr}/${cidr}`;
-    }
-  }
-  return null;
+  const net = shared.parseNetworkString(network, strict, throwErrors);
+  if (!net) return null;
+  if (!shared.increaseAddressWithCIDR(net.bytes, net.cidr, throwErrors)) return null;
+  const addr = shared.bytesToAddr(net.bytes, throwErrors);
+  if (!addr) return null;
+  return `${addr}/${net.cidr}`;
 }
 
 /**
@@ -255,7 +204,7 @@ export function nextNetwork(network: string, strict?: boolean, throwErrors?: boo
  * Please note that IPv6 does not have broadcast addresses.
  *
  * @example
- * netparser.broadcastAddress("192.168.0.0/24")  // returns 192.168.1.255
+ * netparser.broadcastAddress("192.168.0.0/24")  // returns 192.168.0.255
  *
  * @param network - A network like 192.168.0.0/24
  * @param throwErrors - Stop the library from failing silently
@@ -263,23 +212,61 @@ export function nextNetwork(network: string, strict?: boolean, throwErrors?: boo
  * @returns An IPv4 address or null in case of error
  */
 export function broadcastAddress(network: string, throwErrors?: boolean) {
-  if (shared.hasColon(network)) {
-    if (throwErrors) throw errorIPv6DoesNotHaveBroadcast;
-    return null;
-  }
-  network = network.trim();
-  const ip = shared.removeCIDR(network, throwErrors);
-  const cidr = shared.getCIDR(network, throwErrors);
-  if (ip !== null && cidr !== null) {
-    const bytes = shared.addrToBytes(ip, throwErrors);
-    if (bytes !== null) {
-      shared.applySubnetMask(bytes, cidr);
-      if (!shared.increaseAddressWithCIDR(bytes, cidr, throwErrors)) return null;
-      if (!shared.decreaseAddressWithCIDR(bytes, bytes.length * 8, throwErrors)) return null;
-      const addr = shared.bytesToAddr(bytes, throwErrors);
-      if (addr) return `${addr}/${cidr}`;
+  const net = shared.parseNetworkString(network, false, throwErrors);
+  if (!net) return null;
+  if (!shared.increaseAddressWithCIDR(net.bytes, net.cidr, throwErrors)) return null;
+  if (!shared.decreaseAddressWithCIDR(net.bytes, net.bytes.length * 8, throwErrors)) return null;
+  const addr = shared.bytesToAddr(net.bytes, throwErrors);
+  if (!addr) return null;
+  return `${addr}/${net.cidr}`;
+}
+
+/**
+ * NetworkContainsSubnet validates that the network is a valid supernet
+ *
+ * @example
+ * netparser.networkContainsSubnet("192.168.0.0/16", "192.168.0.0/24")  // returns true
+ *
+ * @param network - A network like 192.168.0.0/16
+ * @param subnet - A network like 192.168.0.0/24
+ * @param strict - Do not automatically mask addresses to baseAddresses
+ * @param throwErrors - Stop the library from failing silently
+ *
+ * @returns A boolean or null in case of error
+ */
+export function networkContainsSubnet(network: string, subnet: string, strict?: boolean, throwErrors?: boolean) {
+  const alphaNet = shared.parseNetworkString(network, strict, throwErrors);
+  if (!alphaNet) return null;
+  const bravoNet = shared.parseNetworkString(subnet, strict, throwErrors);
+  if (!bravoNet) return null;
+  return shared.networkContainsSubnet(alphaNet, bravoNet);
+}
+
+/**
+ * FindUnusedSubnets returns array of unused subnets given the aggregate and sibling subnets
+ *
+ * @example
+ * netparser.findUnusedSubnets("192.168.0.0/24", ["192.168.0.0/25", "192.168.0.128/26"])  // returns ["192.168.0.224"]
+ *
+ * @param aggregate - Am aggregate network like 192.168.0.0/24
+ * @param subnets - Array of subnetworks like ["192.168.0.0/24", "192.168.0.128/26"]
+ * @param strict - Do not automatically mask addresses to baseAddresses
+ * @param throwErrors - Stop the library from failing silently
+ *
+ * @returns A boolean or null in case of error
+ */
+export function findUnusedSubnets(aggregate: string, subnets: string[], strict?: boolean, throwErrors?: boolean) {
+  const aggnetwork = shared.parseNetworkString(aggregate, throwErrors, strict);
+  if (!aggnetwork) return null;
+  const subnetworks = [] as shared.Network[];
+  for (var s of subnets) {
+    const net = shared.parseNetworkString(s, throwErrors, strict);
+    if (!net) return null;
+    if (aggnetwork.bytes.length === net.bytes.length) {
+      subnetworks.push(net);
     }
   }
+  // TODO
   return null;
 }
 
@@ -290,14 +277,11 @@ module.exports = {
   rangeOfNetworks,
   networkComesBefore,
   nextNetwork,
-  broadcastAddress
+  broadcastAddress,
+  networkContainsSubnet
 };
 
 // The following are pending an implementation:
-
-// NetworkContainsSubnet() validates that the network is a valid supernet
-
-// FindUnusedSubnets() returns a slice of unused subnets given the aggregate and sibling subnets
 
 // IPv4ClassfulNetwork() eithers return the classful network given an IPv4 address or
 // returns nil if given a multicast address or IPv6 address

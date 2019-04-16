@@ -5,6 +5,7 @@ export const errorGenericRemoveCIDR = new Error("more than one '/' was detected"
 export const errorGenericGetCIDR = new Error("unable to get CIDR from subnet string");
 export const errorGenericOffsetAddressWithCIDR = new Error("unable to offset address");
 export const errorOverflowedAddressSpace = new Error("address space overflow detected");
+export const errorNotValidBaseNetworkAddress = new Error("not a valid base network address");
 
 export function hasColon(s: string) {
   return s.search(":") >= 0;
@@ -62,11 +63,15 @@ export function removeBrackets(s: string) {
   return s.replace("[|]", "");
 }
 
-export function duplicateAddress(bytes: Uint8Array) {
-  return bytes.slice();
+export function duplicateAddress(address: Address) {
+  return address.slice();
 }
 
-export function setAddress(src: Uint8Array, dst: Uint8Array) {
+export function subarrayAddress(address: Address, begin: number, end?: number) {
+  return address.subarray(begin, end);
+}
+
+export function setAddress(dst: Uint8Array, src: Uint8Array) {
   for (var i = 0; i < src.length; i++) {
     if (i < dst.length) {
       dst[i] = src[i];
@@ -76,7 +81,7 @@ export function setAddress(src: Uint8Array, dst: Uint8Array) {
   }
 }
 
-export enum cmp {
+export enum Pos {
   before = -1,
   equals = 0,
   after = 1
@@ -85,16 +90,16 @@ export enum cmp {
 export function compareAddresses(a: Uint8Array, b: Uint8Array) {
   if (a !== b) {
     if (a.length < b.length) {
-      return cmp.before;
+      return Pos.before;
     } else if (a.length > b.length) {
-      return cmp.after;
+      return Pos.after;
     }
     for (var i = 0; i < a.length; i++) {
-      if (a[i] < b[i]) return cmp.before;
-      if (a[i] > b[i]) return cmp.after;
+      if (a[i] < b[i]) return Pos.before;
+      if (a[i] > b[i]) return Pos.after;
     }
   }
-  return cmp.equals;
+  return Pos.equals;
 }
 
 function offsetAddress(bytes: Uint8Array, cidr: number, isPositive: boolean, throwErrors?: boolean): Uint8Array | null {
@@ -167,4 +172,51 @@ export function applySubnetMask(bytes: Uint8Array, cidr: number) {
     maskBits -= 8;
   }
   return bytes;
+}
+
+export type Address = Uint8Array;
+
+export interface Network {
+  bytes: Address;
+  cidr: number;
+}
+
+export function parseNetworkString(s: string, strict?: boolean, throwErrors?: boolean, garbage?: Uint8Array) {
+  s = s.trim();
+  const isIPv6 = hasColon(s);
+  if (isIPv6) {
+    s = removeBrackets(s);
+  }
+  const ip = removeCIDR(s, throwErrors);
+  const cidr = getCIDR(s, throwErrors);
+  if (ip !== null && cidr !== null) {
+    const bytes = addrToBytes(ip, throwErrors);
+    if (bytes !== null) {
+      if (!strict) {
+        applySubnetMask(bytes, cidr);
+      } else {
+        if (garbage === undefined || garbage.length < 16) {
+          garbage = new Uint8Array(16);
+        }
+        setAddress(garbage, bytes);
+        applySubnetMask(bytes, cidr);
+        const garbageSubarray = garbage.subarray(0, bytes.length);
+        if (compareAddresses(bytes, garbageSubarray) !== 0) {
+          if (throwErrors) throw errorNotValidBaseNetworkAddress;
+          return null;
+        }
+      }
+      return { bytes, cidr } as Network;
+    }
+  }
+  return null;
+}
+
+export function networkContainsSubnet(net: Network, subnet: Network) {
+  if (net.bytes.length !== subnet.bytes.length) return false;
+  if (compareAddresses(net.bytes, subnet.bytes) > 0) return false;
+  increaseAddressWithCIDR(net.bytes, net.cidr);
+  increaseAddressWithCIDR(subnet.bytes, subnet.cidr);
+  if (compareAddresses(net.bytes, subnet.bytes) < 0) return false;
+  return true;
 }
