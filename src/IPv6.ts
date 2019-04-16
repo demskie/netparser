@@ -1,9 +1,5 @@
 import * as shared from "./shared";
-
-export const errorGenericAddrToBytes = new Error("unable to convert IPv6 string to bytes");
-export const errorGenericBytesToAddr = new Error("unable to convert IPv6 bytes to string");
-export const errorGenericFindLongestZeroHextetChain = new Error("unable to findLongestZeroHextetChain");
-export const errorGenericPadZeros = new Error("unable to padZeros for IPv6 address");
+import * as errors from "./errors";
 
 function padZeros(addr: string, throwErrors?: boolean) {
   if (addr.length >= 2) {
@@ -22,7 +18,7 @@ function padZeros(addr: string, throwErrors?: boolean) {
     splitAddr[0] += shared.repeatString(":0", 8 - hextetCount);
     return splitAddr.join(":");
   }
-  if (throwErrors) throw errorGenericPadZeros;
+  if (throwErrors) throw errors.GenericPadZeros;
   return null;
 }
 
@@ -67,14 +63,14 @@ export function addrToBytes(addr: string, throwErrors?: boolean) {
             arr[2 * j + 1] = val % 256;
             break;
           default:
-            if (throwErrors) throw errorGenericAddrToBytes;
+            if (throwErrors) throw errors.GenericAddrToBytes;
             return null;
         }
       }
       return arr;
     }
   }
-  if (throwErrors) throw errorGenericAddrToBytes;
+  if (throwErrors) throw errors.GenericAddrToBytes;
   return null;
 }
 
@@ -100,7 +96,7 @@ function findLongestZeroHextetChain(bytes: Uint8Array, throwErrors?: boolean) {
     }
     return longest;
   }
-  if (throwErrors) throw errorGenericFindLongestZeroHextetChain;
+  if (throwErrors) throw errors.GenericFindLongestZeroHextetChain;
   return null;
 }
 
@@ -119,6 +115,6 @@ export function bytesToAddr(bytes: Uint8Array, throwErrors?: boolean) {
     }
     return result;
   }
-  if (throwErrors) throw errorGenericBytesToAddr;
+  if (throwErrors) throw errors.GenericBytesToAddr;
   return null;
 }

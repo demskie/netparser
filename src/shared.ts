@@ -1,11 +1,13 @@
 import * as v4 from "./IPv4";
 import * as v6 from "./IPv6";
+import * as errors from "./errors";
 
-export const errorGenericRemoveCIDR = new Error("more than one '/' was detected");
-export const errorGenericGetCIDR = new Error("unable to get CIDR from subnet string");
-export const errorGenericOffsetAddressWithCIDR = new Error("unable to offset address");
-export const errorOverflowedAddressSpace = new Error("address space overflow detected");
-export const errorNotValidBaseNetworkAddress = new Error("not a valid base network address");
+export type Address = Uint8Array;
+
+export interface Network {
+  bytes: Address;
+  cidr: number;
+}
 
 export function hasColon(s: string) {
   return s.search(":") >= 0;
@@ -42,7 +44,7 @@ export function removeCIDR(s: string, throwErrors?: boolean) {
     case 2:
       return splitAddr[0];
   }
-  if (throwErrors) throw errorGenericRemoveCIDR;
+  if (throwErrors) throw errors.GenericRemoveCIDR;
   return null;
 }
 
@@ -55,7 +57,7 @@ export function getCIDR(s: string, throwErrors?: boolean) {
       if (0 < val && val <= 32) return val;
     }
   }
-  if (throwErrors) throw errorGenericGetCIDR;
+  if (throwErrors) throw errors.GenericGetCIDR;
   return null;
 }
 
@@ -115,10 +117,10 @@ function offsetAddress(bytes: Uint8Array, cidr: number, isPositive: boolean, thr
       const supernetCIDR = targetByte * 8;
       return offsetAddress(bytes, supernetCIDR, isPositive, throwErrors);
     }
-    if (throwErrors) throw errorOverflowedAddressSpace;
+    if (throwErrors) throw errors.OverflowedAddressSpace;
     return null;
   }
-  if (throwErrors) throw errorGenericOffsetAddressWithCIDR;
+  if (throwErrors) throw errors.GenericOffsetAddressWithCIDR;
   return null;
 }
 
@@ -126,7 +128,7 @@ export function increaseAddressWithCIDR(bytes: Uint8Array, cidr: number, throwEr
   if (cidr > 0 && (bytes.length === 4 || bytes.length === 16)) {
     return offsetAddress(bytes, cidr, true, throwErrors);
   }
-  if (throwErrors) throw errorGenericOffsetAddressWithCIDR;
+  if (throwErrors) throw errors.GenericOffsetAddressWithCIDR;
   return null;
 }
 
@@ -134,7 +136,7 @@ export function decreaseAddressWithCIDR(bytes: Uint8Array, cidr: number, throwEr
   if (cidr > 0 && (bytes.length === 4 || bytes.length === 16)) {
     return offsetAddress(bytes, cidr, false, throwErrors);
   }
-  if (throwErrors) throw errorGenericOffsetAddressWithCIDR;
+  if (throwErrors) throw errors.GenericOffsetAddressWithCIDR;
   return null;
 }
 
@@ -174,11 +176,17 @@ export function applySubnetMask(bytes: Uint8Array, cidr: number) {
   return bytes;
 }
 
-export type Address = Uint8Array;
-
-export interface Network {
-  bytes: Address;
-  cidr: number;
+export function parseAddressString(s: string, throwErrors?: boolean) {
+  s = s.trim();
+  const isIPv6 = hasColon(s);
+  if (isIPv6) {
+    s = removeBrackets(s);
+  }
+  const ip = removeCIDR(s, throwErrors);
+  if (ip !== null) {
+    return addrToBytes(ip, throwErrors) as Address;
+  }
+  return null;
 }
 
 export function parseNetworkString(s: string, strict?: boolean, throwErrors?: boolean, garbage?: Uint8Array) {
@@ -202,7 +210,7 @@ export function parseNetworkString(s: string, strict?: boolean, throwErrors?: bo
         applySubnetMask(bytes, cidr);
         const garbageSubarray = garbage.subarray(0, bytes.length);
         if (compareAddresses(bytes, garbageSubarray) !== 0) {
-          if (throwErrors) throw errorNotValidBaseNetworkAddress;
+          if (throwErrors) throw errors.NotValidBaseNetworkAddress;
           return null;
         }
       }

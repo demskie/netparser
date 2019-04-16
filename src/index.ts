@@ -1,8 +1,5 @@
 import * as shared from "./shared";
-
-export const errorMixingIPv4AndIPv6 = new Error("mixing IPv4 and IPv6 is invalid");
-export const errorNotValidBaseNetworkAddress = new Error("not a valid base network address");
-export const errorIPv6DoesNotHaveBroadcast = new Error("IPv6 does not have broadcast addresses");
+import * as errors from "./errors";
 
 /**
  * Parse an IP address
@@ -99,58 +96,45 @@ export function baseAddress(networkAddress: string, throwErrors?: boolean) {
  * @returns An array of networks or null in case of error
  */
 export function rangeOfNetworks(startAddress: string, stopAddress: string, throwErrors?: boolean) {
-  let start = startAddress.trim();
-  let stop = stopAddress.trim();
-  const startHasColon = shared.hasColon(start);
-  const stopHasColon = shared.hasColon(stop);
-  if (startHasColon !== stopHasColon) {
-    if (throwErrors) throw errorMixingIPv4AndIPv6;
+  let startAddr = shared.parseAddressString(startAddress, throwErrors);
+  if (!startAddr) return null;
+  let stopAddr = shared.parseAddressString(stopAddress, throwErrors);
+  if (!stopAddr) return null;
+  if (startAddr.length !== stopAddr.length) {
+    if (throwErrors) throw errors.MixingIPv4AndIPv6;
     return null;
   }
-  if (startHasColon && stopHasColon) {
-    start = shared.removeBrackets(start);
-    stop = shared.removeBrackets(stop);
+  switch (shared.compareAddresses(startAddr, stopAddr)) {
+    case shared.Pos.equals:
+      return [`${startAddress}/${startAddr.length}`];
+    case shared.Pos.after:
+      [startAddr, stopAddr] = [stopAddr, startAddr];
   }
-  const startIP = shared.removeCIDR(start, throwErrors);
-  const stopIP = shared.removeCIDR(stop, throwErrors);
-  if (startIP !== null && stopIP !== null) {
-    let startBytes = shared.addrToBytes(startIP, throwErrors);
-    let stopBytes = shared.addrToBytes(stopIP, throwErrors);
-    if (startBytes !== null && stopBytes !== null) {
-      switch (shared.compareAddresses(startBytes, stopBytes)) {
-        case shared.Pos.equals:
-          return [start];
-        case shared.Pos.after:
-          [startBytes, stopBytes] = [stopBytes, startBytes];
+  var results = [] as string[];
+  const currentBytes = shared.duplicateAddress(startAddr);
+  while (shared.compareAddresses(currentBytes, stopAddr) <= 0) {
+    const addrString = shared.bytesToAddr(currentBytes, throwErrors);
+    var cidr = 1;
+    var bytesCopy = shared.duplicateAddress(currentBytes);
+    while (cidr < bytesCopy.length * 8) {
+      shared.increaseAddressWithCIDR(bytesCopy, cidr, throwErrors);
+      shared.decreaseAddressWithCIDR(bytesCopy, bytesCopy.length * 8, throwErrors);
+      if (shared.compareAddresses(bytesCopy, stopAddr) !== shared.Pos.after) {
+        shared.applySubnetMask(bytesCopy, cidr);
+        if (shared.compareAddresses(bytesCopy, currentBytes) === shared.Pos.equals) break;
       }
-      var results = [] as string[];
-      const currentBytes = shared.duplicateAddress(startBytes);
-      while (shared.compareAddresses(currentBytes, stopBytes) <= 0) {
-        const addrString = shared.bytesToAddr(currentBytes, throwErrors);
-        var cidr = 1;
-        var bytesCopy = shared.duplicateAddress(currentBytes);
-        while (cidr < bytesCopy.length * 8) {
-          shared.increaseAddressWithCIDR(bytesCopy, cidr, throwErrors);
-          shared.decreaseAddressWithCIDR(bytesCopy, bytesCopy.length * 8, throwErrors);
-          if (shared.compareAddresses(bytesCopy, stopBytes) !== shared.Pos.after) {
-            shared.applySubnetMask(bytesCopy, cidr);
-            if (shared.compareAddresses(bytesCopy, currentBytes) === shared.Pos.equals) break;
-          }
-          shared.setAddress(bytesCopy, currentBytes);
-          cidr++;
-        }
-        results.push(`${addrString}/${cidr}`);
-        shared.increaseAddressWithCIDR(currentBytes, cidr, throwErrors);
-      }
-      return results;
+      shared.setAddress(bytesCopy, currentBytes);
+      cidr++;
     }
+    results.push(`${addrString}/${cidr}`);
+    shared.increaseAddressWithCIDR(currentBytes, cidr, throwErrors);
   }
-  return null;
+  return results;
 }
 
 /**
  * NetworkComesBefore returns a bool with regards to numerical network order.
- * Please mote that IPv4 comes before IPv6 and larger networks come before smaller ones.
+ * Please note that IPv4 comes before IPv6 and larger networks come before smaller ones.
  *
  * @example
  * netparser.networkComesBefore("192.168.0.0/24", "192.168.1.0/24")  // returns true

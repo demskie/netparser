@@ -1,5 +1,6 @@
 import * as shared from "./shared";
 import * as ipv4 from "./IPv4";
+import * as errors from "./errors";
 
 test("sanity check IPv4 offset by /32", () => {
   const input = "192.168.0.0";
@@ -65,7 +66,7 @@ test("throw IPv4 address space overflow error", () => {
   } catch (e) {
     err = e;
   }
-  if (err.message !== shared.errorOverflowedAddressSpace.message) {
+  if (err.message !== errors.OverflowedAddressSpace.message) {
     throw new Error(`unexpected: ${err}`);
   }
 });
