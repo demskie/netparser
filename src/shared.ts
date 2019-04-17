@@ -69,6 +69,10 @@ export function duplicateAddress(address: Address) {
   return address.slice();
 }
 
+export function duplicateNetwork(network: Network) {
+  return { bytes: network.bytes.slice(), cidr: network.cidr } as Network;
+}
+
 export function subarrayAddress(address: Address, begin: number, end?: number) {
   return address.subarray(begin, end);
 }
@@ -223,8 +227,44 @@ export function parseNetworkString(s: string, strict?: boolean, throwErrors?: bo
 export function networkContainsSubnet(net: Network, subnet: Network) {
   if (net.bytes.length !== subnet.bytes.length) return false;
   if (compareAddresses(net.bytes, subnet.bytes) > 0) return false;
-  increaseAddressWithCIDR(net.bytes, net.cidr);
+  const netBytesEnd = duplicateAddress(net.bytes);
+  increaseAddressWithCIDR(netBytesEnd, net.cidr);
+  const subnetBytesEnd = duplicateAddress(subnet.bytes);
   increaseAddressWithCIDR(subnet.bytes, subnet.cidr);
-  if (compareAddresses(net.bytes, subnet.bytes) < 0) return false;
+  if (compareAddresses(netBytesEnd, subnetBytesEnd) < 0) return false;
   return true;
+}
+
+export function networkContainsAddress(net: Network, addr: Address) {
+  if (net.bytes.length !== addr.length) return false;
+  if (compareAddresses(net.bytes, addr) > 0) return false;
+  const netBytesEnd = duplicateAddress(net.bytes);
+  increaseAddressWithCIDR(netBytesEnd, net.cidr);
+  if (compareAddresses(netBytesEnd, addr) > 0) return true;
+  return false;
+}
+
+export function findNetworkIntersection(network: Network, ...otherNetworks: Network[]) {
+  for (var otherNet of otherNetworks) {
+    if (networkContainsAddress(network, otherNet.bytes)) {
+      return otherNet;
+    }
+  }
+  return null;
+}
+
+export function findNetworkWithoutIntersection(currentNetwork: Network, ...otherNetworks: Network[]) {
+  const nextNetwork = duplicateNetwork(currentNetwork);
+  const nextNetworkBase = duplicateAddress(currentNetwork.bytes);
+  const lastIntersect = findNetworkIntersection(currentNetwork, ...otherNetworks);
+  while (lastIntersect) {
+    if (nextNetwork.cidr > 1) {
+      applySubnetMask(nextNetworkBase, nextNetwork.cidr--);
+      if (compareAddresses(nextNetwork.bytes, nextNetworkBase) === 0) {
+        // do something
+      }
+    } else {
+      // do something else
+    }
+  }
 }
