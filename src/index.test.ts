@@ -1,5 +1,5 @@
 import * as index from "./index";
-import * as subnets from "./mockdata/subnets.json";
+import * as subnets from "./mockdata/subnets";
 
 test("sanity check IPv4", () => {
   const output = index.ip("255.255.255.255", true);
