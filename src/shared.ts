@@ -193,7 +193,7 @@ export function parseAddressString(s: string, throwErrors?: boolean) {
   return null;
 }
 
-export function parseNetworkString(s: string, strict?: boolean, throwErrors?: boolean, garbage?: Uint8Array) {
+export function parseNetworkString(s: string, strict?: boolean, throwErrors?: boolean) {
   s = s.trim();
   const isIPv6 = hasColon(s);
   if (isIPv6) {
@@ -207,13 +207,10 @@ export function parseNetworkString(s: string, strict?: boolean, throwErrors?: bo
       if (!strict) {
         applySubnetMask(bytes, cidr);
       } else {
-        if (garbage === undefined || garbage.length < 16) {
-          garbage = new Uint8Array(16);
-        }
-        setAddress(garbage, bytes);
+        const bytesCopy = new Uint8Array(bytes.length);
+        setAddress(bytesCopy, bytes);
         applySubnetMask(bytes, cidr);
-        const garbageSubarray = garbage.subarray(0, bytes.length);
-        if (compareAddresses(bytes, garbageSubarray) !== 0) {
+        if (compareAddresses(bytes, bytesCopy) !== 0) {
           if (throwErrors) throw errors.NotValidBaseNetworkAddress;
           return null;
         }
@@ -224,47 +221,73 @@ export function parseNetworkString(s: string, strict?: boolean, throwErrors?: bo
   return null;
 }
 
-export function networkContainsSubnet(net: Network, subnet: Network) {
+export function networkContainsSubnet(net: Network, subnet: Network, throwErrors?: boolean) {
   if (net.bytes.length !== subnet.bytes.length) return false;
   if (compareAddresses(net.bytes, subnet.bytes) > 0) return false;
   const netBytesEnd = duplicateAddress(net.bytes);
-  increaseAddressWithCIDR(netBytesEnd, net.cidr);
+  if (!increaseAddressWithCIDR(netBytesEnd, net.cidr, throwErrors)) return false;
   const subnetBytesEnd = duplicateAddress(subnet.bytes);
-  increaseAddressWithCIDR(subnet.bytes, subnet.cidr);
+  if (!increaseAddressWithCIDR(subnet.bytes, subnet.cidr, throwErrors)) return false;
   if (compareAddresses(netBytesEnd, subnetBytesEnd) < 0) return false;
   return true;
 }
 
-export function networkContainsAddress(net: Network, addr: Address) {
+export function networkContainsAddress(net: Network, addr: Address, throwErrors?: boolean) {
   if (net.bytes.length !== addr.length) return false;
   if (compareAddresses(net.bytes, addr) > 0) return false;
   const netBytesEnd = duplicateAddress(net.bytes);
-  increaseAddressWithCIDR(netBytesEnd, net.cidr);
+  if (!increaseAddressWithCIDR(netBytesEnd, net.cidr, throwErrors)) return false;
   if (compareAddresses(netBytesEnd, addr) > 0) return true;
   return false;
 }
 
-export function findNetworkIntersection(network: Network, ...otherNetworks: Network[]) {
+export function networksIntersect(net: Network, otherNet: Network, throwErrors?: boolean) {
+  if (net.bytes.length !== otherNet.bytes.length) return false;
+  const netBytesStart = net.bytes;
+  const netBytesEnd = duplicateAddress(net.bytes);
+  if (!increaseAddressWithCIDR(netBytesEnd, net.cidr, throwErrors)) return false;
+  decreaseAddressWithCIDR(netBytesEnd, net.bytes.length * 8);
+  const otherNetBytesStart = otherNet.bytes;
+  const otherNetBytesEnd = duplicateAddress(otherNet.bytes);
+  if (!increaseAddressWithCIDR(otherNetBytesEnd, otherNet.cidr, throwErrors)) return false;
+  decreaseAddressWithCIDR(otherNetBytesEnd, otherNet.bytes.length * 8);
+  if (compareAddresses(netBytesEnd, otherNetBytesStart) >= 0) return true;
+  if (compareAddresses(otherNetBytesEnd, netBytesStart) >= 0) return true;
+  return false;
+}
+
+export function findNetworkIntersection(network: Network, otherNetworks: Network[]) {
   for (var otherNet of otherNetworks) {
-    if (networkContainsAddress(network, otherNet.bytes)) {
+    if (networksIntersect(network, otherNet)) {
       return otherNet;
     }
   }
   return null;
 }
 
-export function findNetworkWithoutIntersection(currentNetwork: Network, ...otherNetworks: Network[]) {
-  const nextNetwork = duplicateNetwork(currentNetwork);
-  const nextNetworkBase = duplicateAddress(currentNetwork.bytes);
-  const lastIntersect = findNetworkIntersection(currentNetwork, ...otherNetworks);
-  while (lastIntersect) {
-    if (nextNetwork.cidr > 1) {
-      applySubnetMask(nextNetworkBase, nextNetwork.cidr--);
-      if (compareAddresses(nextNetwork.bytes, nextNetworkBase) === 0) {
-        // do something
-      }
+export function isValidNetworkAddress(net: Network) {
+  const netBaseBytes = duplicateAddress(net.bytes);
+  applySubnetMask(netBaseBytes, net.cidr);
+  return compareAddresses(net.bytes, netBaseBytes) === 0;
+}
+
+export function findNetworkWithoutIntersection(network: Network, otherNetworks: Network[]) {
+  const currentNetwork = duplicateNetwork(network);
+  while (true) {
+    if (currentNetwork.cidr > 1) {
+      currentNetwork.cidr--;
     } else {
-      // do something else
+      if (!increaseAddressWithCIDR(currentNetwork.bytes, network.bytes.length * 8)) return null;
+      currentNetwork.cidr = network.cidr;
+    }
+
+    if (isValidNetworkAddress(currentNetwork)) {
+      const intersect = findNetworkIntersection(currentNetwork, otherNetworks);
+      if (!intersect) {
+        break;
+      }
     }
   }
+
+  return currentNetwork;
 }

@@ -65,6 +65,7 @@ export function broadcastAddress(network: string, throwErrors?: boolean) {
  * @returns A boolean or null in case of error
  */
 export function findUnusedSubnets(aggregate: string, subnets: string[], strict?: boolean, throwErrors?: boolean) {
+  if (subnets.length === 0) return aggregate;
   const aggnetwork = shared.parseNetworkString(aggregate, throwErrors, strict);
   if (!aggnetwork) return null;
   const subnetworks = [] as shared.Network[];
@@ -75,8 +76,26 @@ export function findUnusedSubnets(aggregate: string, subnets: string[], strict?:
       subnetworks.push(net);
     }
   }
-  // TODO
-  return null;
+  const aggnetworkEnd = shared.duplicateAddress(aggnetwork.bytes);
+  shared.increaseAddressWithCIDR(aggnetworkEnd, aggnetwork.cidr);
+  shared.decreaseAddressWithCIDR(aggnetworkEnd, aggnetwork.bytes.length * 8);
+  const results = [] as string[];
+  let currentSubnet: shared.Network | null = aggnetwork;
+  while (currentSubnet) {
+    currentSubnet = shared.findNetworkWithoutIntersection(currentSubnet, subnetworks);
+    if (currentSubnet) {
+      const addr = shared.bytesToAddr(currentSubnet.bytes, throwErrors);
+      if (!addr) return null;
+      results.push(`${addr}/${currentSubnet.bytes}`);
+      if (
+        !shared.increaseAddressWithCIDR(currentSubnet.bytes, currentSubnet.cidr) ||
+        shared.compareAddresses(currentSubnet.bytes, aggnetworkEnd) > 0
+      ) {
+        break;
+      }
+    }
+  }
+  return results;
 }
 
 /**
@@ -148,10 +167,9 @@ export function network(networkAddress: string, throwErrors?: boolean) {
  * @returns A boolean or null in case of error
  */
 export function networkComesBefore(network: string, otherNetwork: string, strict?: boolean, throwErrors?: boolean) {
-  const garbage = new Uint8Array(16);
-  const net = shared.parseNetworkString(network, strict, throwErrors, garbage);
+  const net = shared.parseNetworkString(network, strict, throwErrors);
   if (!net) return null;
-  const otherNet = shared.parseNetworkString(network, strict, throwErrors, garbage);
+  const otherNet = shared.parseNetworkString(network, strict, throwErrors);
   if (!otherNet) return null;
   switch (shared.compareAddresses(net.bytes, otherNet.bytes)) {
     case shared.Pos.before:
