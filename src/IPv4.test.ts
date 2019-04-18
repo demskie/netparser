@@ -81,3 +81,24 @@ test("sanity check IPv4 applySubnetMask()", () => {
     throw new Error(`'${output}' !== '${expected}'`);
   }
 });
+
+test("sanity check IPv4 networksIntersect() #1", () => {
+  const alpha = shared.parseNetworkString("192.168.0.0/22");
+  const bravo = shared.parseNetworkString("192.168.1.0/24");
+  const output = shared.networksIntersect(alpha, bravo);
+  expect(output).toEqual(true);
+});
+
+test("sanity check IPv4 networksIntersect() #2", () => {
+  const alpha = shared.parseNetworkString("192.168.0.0/24");
+  const bravo = shared.parseNetworkString("192.168.1.0/24");
+  const output = shared.networksIntersect(alpha, bravo);
+  expect(output).toEqual(false);
+});
+
+test("sanity check IPv4 networksIntersect() #3", () => {
+  const alpha = shared.parseNetworkString("192.168.1.0/24");
+  const bravo = shared.parseNetworkString("192.168.0.0/24");
+  const output = shared.networksIntersect(alpha, bravo);
+  expect(output).toEqual(false);
+});

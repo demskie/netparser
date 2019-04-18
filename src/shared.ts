@@ -243,17 +243,19 @@ export function networkContainsAddress(net: Network, addr: Address, throwErrors?
 
 export function networksIntersect(net: Network, otherNet: Network, throwErrors?: boolean) {
   if (net.bytes.length !== otherNet.bytes.length) return false;
-  const netBytesStart = net.bytes;
-  const netBytesEnd = duplicateAddress(net.bytes);
-  if (!increaseAddressWithCIDR(netBytesEnd, net.cidr, throwErrors)) return false;
-  decreaseAddressWithCIDR(netBytesEnd, net.bytes.length * 8);
-  const otherNetBytesStart = otherNet.bytes;
-  const otherNetBytesEnd = duplicateAddress(otherNet.bytes);
-  if (!increaseAddressWithCIDR(otherNetBytesEnd, otherNet.cidr, throwErrors)) return false;
-  decreaseAddressWithCIDR(otherNetBytesEnd, otherNet.bytes.length * 8);
-  if (compareAddresses(netBytesEnd, otherNetBytesStart) >= 0) return true;
-  if (compareAddresses(otherNetBytesEnd, netBytesStart) >= 0) return true;
-  return false;
+  let alphaStart = net.bytes;
+  let alphaEnd = duplicateAddress(net.bytes);
+  if (!increaseAddressWithCIDR(alphaEnd, net.cidr, throwErrors)) return false;
+  decreaseAddressWithCIDR(alphaEnd, net.bytes.length * 8);
+  let bravoStart = otherNet.bytes;
+  let bravoEnd = duplicateAddress(otherNet.bytes);
+  if (!increaseAddressWithCIDR(bravoEnd, otherNet.cidr, throwErrors)) return false;
+  decreaseAddressWithCIDR(bravoEnd, otherNet.bytes.length * 8);
+  if (compareAddresses(alphaStart, bravoStart) > 0) {
+    [alphaStart, alphaEnd, bravoStart, bravoEnd] = [bravoStart, bravoEnd, alphaStart, alphaEnd];
+  }
+  if (compareAddresses(alphaEnd, bravoStart) < 0) return false;
+  return true;
 }
 
 export function findNetworkIntersection(network: Network, otherNetworks: Network[]) {
