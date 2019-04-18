@@ -86,13 +86,14 @@ export function findUnusedSubnets(aggregate: string, subnets: string[], strict?:
     if (currentSubnet) {
       const addr = shared.bytesToAddr(currentSubnet.bytes, throwErrors);
       if (!addr) return null;
-      results.push(`${addr}/${currentSubnet.bytes}`);
+      results.push(`${addr}/${currentSubnet.cidr}`);
       if (
         !shared.increaseAddressWithCIDR(currentSubnet.bytes, currentSubnet.cidr) ||
         shared.compareAddresses(currentSubnet.bytes, aggnetworkEnd) > 0
       ) {
         break;
       }
+      currentSubnet.cidr = aggnetwork.cidr;
     }
   }
   return results;

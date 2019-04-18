@@ -275,21 +275,17 @@ export function isValidNetworkAddress(net: Network) {
 
 export function findNetworkWithoutIntersection(network: Network, otherNetworks: Network[]) {
   const currentNetwork = duplicateNetwork(network);
-  while (true) {
-    if (currentNetwork.cidr > 1) {
-      currentNetwork.cidr--;
-    } else {
-      if (!increaseAddressWithCIDR(currentNetwork.bytes, network.bytes.length * 8)) return null;
-      currentNetwork.cidr = network.cidr;
-    }
-
+  while (currentNetwork.cidr <= network.bytes.length * 8) {
     if (isValidNetworkAddress(currentNetwork)) {
-      const intersect = findNetworkIntersection(currentNetwork, otherNetworks);
-      if (!intersect) {
-        break;
+      if (!findNetworkIntersection(currentNetwork, otherNetworks)) {
+        return currentNetwork;
+      }
+      if (currentNetwork.cidr >= network.bytes.length * 8) {
+        if (!increaseAddressWithCIDR(currentNetwork.bytes, network.bytes.length * 8)) return null;
+        currentNetwork.cidr = network.cidr;
       }
     }
+    currentNetwork.cidr++;
   }
-
-  return currentNetwork;
+  return null;
 }
