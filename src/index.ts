@@ -210,7 +210,7 @@ export function networkContainsSubnet(network: string, subnet: string, strict?: 
  * netparser.networksIntersect("192.168.0.0/23", "192.168.1.0/24")  // returns true
  *
  * @param network - A network like 192.168.0.0/23
- * @param otherNetework - A network like 192.168.1.0/24
+ * @param otherNetwork - A network like 192.168.1.0/24
  * @param strict - Do not automatically mask addresses to baseAddresses
  * @param throwErrors - Stop the library from failing silently
  *
@@ -251,8 +251,8 @@ export function nextNetwork(network: string, strict?: boolean, throwErrors?: boo
  * @example
  * netparser.rangeOfNetworks("192.168.1.2", "192.168.1.5")  // returns ["192.168.1.2/31", "192.168.1.4/31"]
  *
- * @param start - An address like 192.168.1.2
- * @param stop - An address like 192.168.1.5
+ * @param startAddress - An address like 192.168.1.2
+ * @param stopAddress - An address like 192.168.1.5
  * @param throwErrors - Stop the library from failing silently
  *
  * @returns An array of networks or null in case of error
