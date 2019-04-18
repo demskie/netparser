@@ -204,6 +204,27 @@ export function networkContainsSubnet(network: string, subnet: string, strict?: 
 }
 
 /**
+ * NetworksIntersect returns a bool showing if the networks overlap
+ *
+ * @example
+ * netparser.networksIntersect("192.168.0.0/23", "192.168.1.0/24")  // returns true
+ *
+ * @param network - A network like 192.168.0.0/23
+ * @param otherNetework - A network like 192.168.1.0/24
+ * @param strict - Do not automatically mask addresses to baseAddresses
+ * @param throwErrors - Stop the library from failing silently
+ *
+ * @returns A boolean or null in case of error
+ */
+export function networksIntersect(network: string, otherNetwork: string, strict?: boolean, throwErrors?: boolean) {
+  const alphaNet = shared.parseNetworkString(network, strict, throwErrors);
+  if (!alphaNet) return null;
+  const bravoNet = shared.parseNetworkString(otherNetwork, strict, throwErrors);
+  if (!bravoNet) return null;
+  return shared.networksIntersect(alphaNet, bravoNet, throwErrors);
+}
+
+/**
  * NextNetwork returns the next network of the same size.
  *
  * @example
