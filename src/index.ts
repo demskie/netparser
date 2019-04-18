@@ -252,23 +252,15 @@ export function rangeOfNetworks(startAddress: string, stopAddress: string, throw
       [startAddr, stopAddr] = [stopAddr, startAddr];
   }
   var results = [] as string[];
-  const currentBytes = shared.duplicateAddress(startAddr);
-  while (shared.compareAddresses(currentBytes, stopAddr) <= 0) {
-    const addrString = shared.bytesToAddr(currentBytes, throwErrors);
-    var cidr = 1;
-    var bytesCopy = shared.duplicateAddress(currentBytes);
-    while (cidr < bytesCopy.length * 8) {
-      shared.increaseAddressWithCIDR(bytesCopy, cidr, throwErrors);
-      shared.decreaseAddressWithCIDR(bytesCopy, bytesCopy.length * 8, throwErrors);
-      if (shared.compareAddresses(bytesCopy, stopAddr) !== shared.Pos.after) {
-        shared.applySubnetMask(bytesCopy, cidr);
-        if (shared.compareAddresses(bytesCopy, currentBytes) === shared.Pos.equals) break;
-      }
-      shared.setAddress(bytesCopy, currentBytes);
-      cidr++;
+  const net = { bytes: startAddr, cidr: 1 };
+  while (shared.compareAddresses(net.bytes, stopAddr) <= 0) {
+    while (!shared.isValidNetworkAddress(net) || shared.networkGoesPastAddress(net, stopAddr)) {
+      net.cidr++;
     }
-    results.push(`${addrString}/${cidr}`);
-    shared.increaseAddressWithCIDR(currentBytes, cidr, throwErrors);
+    const addr = shared.bytesToAddr(net.bytes, throwErrors);
+    results.push(`${addr}/${net.cidr}`);
+    shared.increaseAddressWithCIDR(net.bytes, net.cidr, throwErrors);
+    net.cidr = 1;
   }
   return results;
 }

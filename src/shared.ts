@@ -221,6 +221,14 @@ export function parseNetworkString(s: string, strict?: boolean, throwErrors?: bo
   return null;
 }
 
+export function networkGoesPastAddress(net: Network, addr: Address) {
+  const netBytesEnd = duplicateAddress(net.bytes);
+  increaseAddressWithCIDR(netBytesEnd, net.cidr);
+  decreaseAddressWithCIDR(netBytesEnd, net.bytes.length * 8);
+  if (compareAddresses(netBytesEnd, addr) > 0) return true;
+  return false;
+}
+
 export function networkContainsSubnet(net: Network, subnet: Network, throwErrors?: boolean) {
   if (net.bytes.length !== subnet.bytes.length) return false;
   if (compareAddresses(net.bytes, subnet.bytes) > 0) return false;
