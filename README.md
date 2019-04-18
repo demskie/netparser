@@ -20,8 +20,7 @@ netparser.broadcastAddress("192.168.0.50/24");
 // returns "192.168.0.255"
 
 netparser.findUnusedSubnets("192.168.0.0/22", ["192.168.1.0/24", "192.168.2.32/30"]);
-/* returns ["192.168.0.0/24", "192.168.2.0/27", "192.168.2.36/30", "192.168.2.40/29",
-            "192.168.2.48/28", "192.168.2.64/26", "192.168.2.128/25", "192.168.3.0/24"] */
+// returns ["192.168.0.0/24", "192.168.2.0/27", "192.168.2.36/30", "192.168.2.40/29", "192.168.2.48/28", "192.168.2.64/26", "192.168.2.128/25", "192.168.3.0/24"]
 
 netparser.ip("[2001:db8:122:344:0:0:0::0:0:0:1]  ");
 // returns "2001:db8:122:344::1"
@@ -39,9 +38,7 @@ netparser.nextNetwork("192.168.0.0/24");
 // returns "192.168.1.0/24"
 
 netparser.rangeOfNetworks("192.168.1.2", "192.168.2.2");
-/* returns ["192.168.1.2/31", "192.168.1.4/30", "192.168.1.8/29", "192.168.1.16/28",
-            "192.168.1.32/27", "192.168.1.64/26", "192.168.1.128/25", "192.168.2.0/31",
-            "192.168.2.2/32"] */
+// returns ["192.168.1.2/31", "192.168.1.4/30", "192.168.1.8/29", "192.168.1.16/28", "192.168.1.32/27", "192.168.1.64/26", "192.168.1.128/25", "192.168.2.0/31", "192.168.2.2/32"]
 ```
 
 ## FYI
@@ -56,8 +53,8 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > <a name="api-baseAddress"></a>
 > ### Function [`baseAddress`](#api-baseAddress)
 > <em>BaseAddress returns the base address for a given subnet address</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L69-L84)  
-> > **baseAddress( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L69-L84)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L15-L30)  
+> > **baseAddress( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L15-L30)  
 > > &emsp;&#x25aa; networkAddress <sup><code>string</code></sup> <em>- A network address like 192.168.0.4/24</em>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
 >
@@ -65,16 +62,16 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > ### Function [`broadcastAddress`](#api-broadcastAddress)
 > <em>BroadcastAddress returns the broadcast address for an IPv4 address.</em>  
 > <em>Please note that IPv6 does not have broadcast addresses.</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L198-L206)  
-> > **broadcastAddress( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L198-L206)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L44-L52)  
+> > **broadcastAddress( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L44-L52)  
 > > &emsp;&#x25aa; network <sup><code>string</code></sup> <em>- A network like 192.168.0.0/24</em>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
 >
 > <a name="api-findUnusedSubnets"></a>
 > ### Function [`findUnusedSubnets`](#api-findUnusedSubnets)
 > <em>FindUnusedSubnets returns array of unused subnets given the aggregate and sibling subnets</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L242-L255)  
-> > **findUnusedSubnets( )** <sup>&rArr; <code>null</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L242-L255)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L67-L100)  
+> > **findUnusedSubnets( )** <sup>&rArr; <code>null | string | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L67-L100)  
 > > &emsp;&#x25aa; aggregate <sup><code>string</code></sup> <em>- Am aggregate network like 192.168.0.0/24</em>  
 > > &emsp;&#x25aa; subnets <sup><code>string[]</code></sup> <em>- Array of subnetworks like ["192.168.0.0/24", "192.168.0.128/26"]</em>  
 > > &emsp;&#x25ab; strict<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Do not automatically mask addresses to baseAddresses</em>  
@@ -83,16 +80,16 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > <a name="api-ip"></a>
 > ### Function [`ip`](#api-ip)
 > <em>Parse an IP address</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L15-L28)  
-> > **ip( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L15-L28)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L113-L126)  
+> > **ip( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L113-L126)  
 > > &emsp;&#x25aa; address <sup><code>string</code></sup> <em>- Either an address like 192.168.0.0 or subnet 192.168.0.0/24</em>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
 >
 > <a name="api-network"></a>
 > ### Function [`network`](#api-network)
 > <em>Parse a network address</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L41-L56)  
-> > **network( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L41-L56)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L139-L154)  
+> > **network( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L139-L154)  
 > > &emsp;&#x25aa; networkAddress <sup><code>string</code></sup> <em>- A network like 192.168.0.0/24</em>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
 >
@@ -100,8 +97,8 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > ### Function [`networkComesBefore`](#api-networkComesBefore)
 > <em>NetworkComesBefore returns a bool with regards to numerical network order.</em>  
 > <em>Please note that IPv4 comes before IPv6 and larger networks come before smaller ones.</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L149-L163)  
-> > **networkComesBefore( )** <sup>&rArr; <code>null | true | false</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L149-L163)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L170-L183)  
+> > **networkComesBefore( )** <sup>&rArr; <code>null | true | false</code></sup> [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L170-L183)  
 > > &emsp;&#x25aa; network <sup><code>string</code></sup> <em>- A network like 192.168.0.0/24</em>  
 > > &emsp;&#x25aa; otherNetwork <sup><code>string</code></sup> <em>- A network like 192.168.1.0/24</em>  
 > > &emsp;&#x25ab; strict<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Do not automatically mask addresses to baseAddresses</em>  
@@ -110,8 +107,8 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > <a name="api-networkContainsSubnet"></a>
 > ### Function [`networkContainsSubnet`](#api-networkContainsSubnet)
 > <em>NetworkContainsSubnet validates that the network is a valid supernet</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L221-L227)  
-> > **networkContainsSubnet( )** <sup>&rArr; <code>null | true | false</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L221-L227)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L198-L204)  
+> > **networkContainsSubnet( )** <sup>&rArr; <code>null | true | false</code></sup> [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L198-L204)  
 > > &emsp;&#x25aa; network <sup><code>string</code></sup> <em>- A network like 192.168.0.0/16</em>  
 > > &emsp;&#x25aa; subnet <sup><code>string</code></sup> <em>- A network like 192.168.0.0/24</em>  
 > > &emsp;&#x25ab; strict<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Do not automatically mask addresses to baseAddresses</em>  
@@ -120,8 +117,8 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > <a name="api-nextNetwork"></a>
 > ### Function [`nextNetwork`](#api-nextNetwork)
 > <em>NextNetwork returns the next network of the same size.</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L177-L184)  
-> > **nextNetwork( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L177-L184)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L218-L225)  
+> > **nextNetwork( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L218-L225)  
 > > &emsp;&#x25aa; network <sup><code>string</code></sup> <em>- A network like 192.168.0.0/24</em>  
 > > &emsp;&#x25ab; strict<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Do not automatically mask addresses to baseAddresses</em>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
@@ -129,8 +126,8 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > <a name="api-rangeOfNetworks"></a>
 > ### Function [`rangeOfNetworks`](#api-rangeOfNetworks)
 > <em>RangeOfNetworks returns an array of networks given a range of addresses</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L98-L133)  
-> > **rangeOfNetworks( )** <sup>&rArr; <code>null | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L98-L133)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L239-L266)  
+> > **rangeOfNetworks( )** <sup>&rArr; <code>null | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/db6e2fe/src/index.ts#L239-L266)  
 > > &emsp;&#x25aa; startAddress <sup><code>string</code></sup>  
 > > &emsp;&#x25aa; stopAddress <sup><code>string</code></sup>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
