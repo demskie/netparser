@@ -57,7 +57,7 @@ export function broadcastAddress(network: string, throwErrors?: boolean) {
  * @example
  * netparser.findUnusedSubnets("192.168.0.0/24", ["192.168.0.0/25", "192.168.0.128/26"])  // returns ["192.168.0.224"]
  *
- * @param aggregate - Am aggregate network like 192.168.0.0/24
+ * @param aggregate - An aggregate network like 192.168.0.0/24
  * @param subnets - Array of subnetworks like ["192.168.0.0/24", "192.168.0.128/26"]
  * @param strict - Do not automatically mask addresses to baseAddresses
  * @param throwErrors - Stop the library from failing silently

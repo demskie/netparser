@@ -11,37 +11,37 @@ npm install netparser
 ## Examples
 
 ```js
-import netparser from "netparser";
+import netparser from 'netparser';
 
-netparser.baseAddress("b011:a2c2:7328:cc01:4ee7:e2ec:6269:babf/64");
-// returns "b011:a2c2:7328:cc01::"
+netparser.baseAddress('b011:a2c2:7328:cc01:4ee7:e2ec:6269:babf/73');
+// returns 'b011:a2c2:7328:cc01:4e80::'
 
-netparser.broadcastAddress("192.168.0.50/24");
-// returns "192.168.0.255"
+netparser.broadcastAddress('192.168.0.50/24');
+// returns '192.168.0.255'
 
-netparser.findUnusedSubnets("192.168.0.0/22", ["192.168.1.0/24", "192.168.2.32/30"]);
-// returns ["192.168.0.0/24", "192.168.2.0/27", "192.168.2.36/30", "192.168.2.40/29", "192.168.2.48/28", "192.168.2.64/26", "192.168.2.128/25", "192.168.3.0/24"]
+netparser.findUnusedSubnets('192.168.0.0/22', ['192.168.1.0/24', '192.168.2.32/30']);
+// returns ['192.168.0.0/24', '192.168.2.0/27', '192.168.2.36/30', '192.168.2.40/29', '192.168.2.48/28', '192.168.2.64/26', '192.168.2.128/25', '192.168.3.0/24']
 
-netparser.ip("[2001:db8:122:344:0:0:0::0:0:0:1]  ");
-// returns "2001:db8:122:344::1"
+netparser.ip(' [2001:db8:122:344:0:0:0::0:0:0:1] ');
+// returns '2001:db8:122:344::1'
 
-netparser.network("192.168.0.0/24");
-// returns "192.168.0.0/24"
+netparser.network(' 192.168.000.000/24 ');
+// returns '192.168.0.0/24'
 
-netparser.networkComesBefore("192.168.0.0/24", "10.0.0.0/8");
+netparser.networkComesBefore('192.168.0.0/24', '10.0.0.0/8');
 // returns false
 
-netparser.networkContainsSubnet("192.168.0.0/16", "192.168.0.0/24");
+netparser.networkContainsSubnet('192.168.0.0/16', '192.168.0.0/24');
 // returns true
 
-netparser.networksIntersect("192.168.0.0/23", "192.168.1.0/24");
+netparser.networksIntersect('192.168.0.0/23', '192.168.1.0/24');
 // returns true
 
-netparser.nextNetwork("192.168.0.0/24");
-// returns "192.168.1.0/24"
+netparser.nextNetwork('192.168.0.0/24');
+// returns '192.168.1.0/24'
 
-netparser.rangeOfNetworks("192.168.1.2", "192.168.2.2");
-// returns ["192.168.1.2/31", "192.168.1.4/30", "192.168.1.8/29", "192.168.1.16/28", "192.168.1.32/27", "192.168.1.64/26", "192.168.1.128/25", "192.168.2.0/31", "192.168.2.2/32"]
+netparser.rangeOfNetworks('192.168.1.2', '192.168.2.2');
+// returns ['192.168.1.2/31', '192.168.1.4/30', '192.168.1.8/29', '192.168.1.16/28', '192.168.1.32/27', '192.168.1.64/26', '192.168.1.128/25', '192.168.2.0/31', '192.168.2.2/32']
 ```
 
 ## FYI
