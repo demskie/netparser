@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc && docts && jest --coverage",
-    "test": "jest --coverage"
+    "test": "tsc && jest --coverage"
   },
   "repository": {
     "type": "git",
