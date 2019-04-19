@@ -48,7 +48,7 @@ export function broadcastAddress(network: string, throwErrors?: boolean) {
   if (!shared.decreaseAddressWithCIDR(net.bytes, net.bytes.length * 8, throwErrors)) return null;
   const addr = shared.bytesToAddr(net.bytes, throwErrors);
   if (!addr) return null;
-  return `${addr}/${net.cidr}`;
+  return `${addr}`;
 }
 
 /**
@@ -170,7 +170,7 @@ export function network(networkAddress: string, throwErrors?: boolean) {
 export function networkComesBefore(network: string, otherNetwork: string, strict?: boolean, throwErrors?: boolean) {
   const net = shared.parseNetworkString(network, strict, throwErrors);
   if (!net) return null;
-  const otherNet = shared.parseNetworkString(network, strict, throwErrors);
+  const otherNet = shared.parseNetworkString(otherNetwork, strict, throwErrors);
   if (!otherNet) return null;
   switch (shared.compareAddresses(net.bytes, otherNet.bytes)) {
     case shared.Pos.before:
@@ -180,6 +180,27 @@ export function networkComesBefore(network: string, otherNetwork: string, strict
   }
   if (net.cidr < otherNet.cidr) return true;
   return false;
+}
+
+/**
+ * NetworkContainsAddress validates that the address is inside the network
+ *
+ * @example
+ * netparser.networkContainsAddress("192.168.0.0/24", "192.168.0.100")  // returns true
+ *
+ * @param network - A network like 192.168.0.0/24
+ * @param address - A network like 192.168.0.100
+ * @param strict - Do not automatically mask addresses to baseAddresses
+ * @param throwErrors - Stop the library from failing silently
+ *
+ * @returns A boolean or null in case of error
+ */
+export function networkContainsAddress(network: string, address: string, strict?: boolean, throwErrors?: boolean) {
+  const net = shared.parseNetworkString(network, strict, throwErrors);
+  if (!net) return null;
+  const addr = shared.parseAddressString(address, throwErrors);
+  if (!addr) return null;
+  return shared.networkContainsAddress(net, addr);
 }
 
 /**
@@ -293,7 +314,9 @@ module.exports = {
   ip,
   network,
   networkComesBefore,
+  networkContainsAddress,
   networkContainsSubnet,
+  networksIntersect,
   nextNetwork,
   rangeOfNetworks
 };

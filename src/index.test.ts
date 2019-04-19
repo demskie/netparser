@@ -1,13 +1,34 @@
 import * as index from "./index";
 import * as subnets from "./mockdata/subnets.mock";
 
-test("sanity check IPv4", () => {
-  const output = index.ip("255.255.255.255", true);
-  expect(output).toEqual("255.255.255.255");
+test("sanity check baseAddress", () => {
+  const output = index.baseAddress("192.168.200.113/24", true);
+  expect(output).toEqual("192.168.200.0");
 });
 
-test("sanity check IPv6", () => {
-  const output = index.ip("ffff:fc00::1:1234", true);
+test("sanity check broadcastAddress", () => {
+  const output = index.broadcastAddress("192.168.0.0/24", true);
+  expect(output).toEqual("192.168.0.255");
+});
+
+test("sanity check unusedSubnets", () => {
+  const output = index.findUnusedSubnets("192.168.0.0/22", ["192.168.1.0/24", "192.168.2.32/30"], true, true);
+  expect(output).toEqual([
+    "192.168.0.0/24",
+    "192.168.2.0/27",
+    "192.168.2.36/30",
+    "192.168.2.40/29",
+    "192.168.2.48/28",
+    "192.168.2.64/26",
+    "192.168.2.128/25",
+    "192.168.3.0/24"
+  ]);
+});
+
+test("sanity check ip parsing", () => {
+  let output = index.ip("255.255.255.255", true);
+  expect(output).toEqual("255.255.255.255");
+  output = index.ip("ffff:fc00::1:1234", true);
   expect(output).toEqual("ffff:fc00::1:1234");
 });
 
@@ -16,16 +37,36 @@ test("sanity check network parsing", () => {
     index.network(input, true);
   }
   for (var input of subnets.invalid as string[]) {
-    expect(index.network(input)).toEqual(null);
+    expect(index.network(input, false)).toEqual(null);
   }
 });
 
-test("sanity check IPv4 baseAddress", () => {
-  const output = index.baseAddress("192.168.200.113/24", true);
-  expect(output).toEqual("192.168.200.0");
+test("sanity check networkComesBefore", () => {
+  const output = index.networkComesBefore("192.168.0.0/24", "192.168.1.0/24", true, true);
+  expect(output).toEqual(true);
 });
 
-test("sanity check IPv4 rangeOfNetworks", () => {
+test("sanity check networkContainsAddress", () => {
+  const output = index.networkContainsAddress("192.168.0.0/24", "192.168.0.100", true, true);
+  expect(output).toEqual(true);
+});
+
+test("sanity check networkContainsSubnet", () => {
+  const output = index.networkContainsSubnet("192.168.0.0/16", "192.168.0.0/24", true, true);
+  expect(output).toEqual(true);
+});
+
+test("sanity check networksIntersect", () => {
+  const output = index.networksIntersect("192.168.0.0/24", "192.168.1.0/24", true, true);
+  expect(output).toEqual(false);
+});
+
+test("sanity check nextNetwork", () => {
+  const output = index.nextNetwork("192.168.0.0/24", true, true);
+  expect(output).toEqual("192.168.1.0/24");
+});
+
+test("sanity check rangeOfNetworks IPv4", () => {
   const output = index.rangeOfNetworks("192.168.1.2", "192.168.2.2", true);
   expect(output).toEqual([
     "192.168.1.2/31",
@@ -40,7 +81,7 @@ test("sanity check IPv4 rangeOfNetworks", () => {
   ]);
 });
 
-test("sanity check IPv6 rangeOfNetworks", () => {
+test("sanity check rangeOfNetworks IPv6", () => {
   const output = index.rangeOfNetworks("2001:400::", "2001:440:ffff:ffff:7fff:ffff:ffff:ffff", true);
   expect(output).toEqual([
     "2001:400::/26",
@@ -77,19 +118,5 @@ test("sanity check IPv6 rangeOfNetworks", () => {
     "2001:440:ffff:fffc::/63",
     "2001:440:ffff:fffe::/64",
     "2001:440:ffff:ffff::/65"
-  ]);
-});
-
-test("sanity check IPv4 unusedSubnets", () => {
-  const output = index.findUnusedSubnets("192.168.0.0/22", ["192.168.1.0/24", "192.168.2.32/30"], true, true);
-  expect(output).toEqual([
-    "192.168.0.0/24",
-    "192.168.2.0/27",
-    "192.168.2.36/30",
-    "192.168.2.40/29",
-    "192.168.2.48/28",
-    "192.168.2.64/26",
-    "192.168.2.128/25",
-    "192.168.3.0/24"
   ]);
 });
