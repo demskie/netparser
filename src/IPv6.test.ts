@@ -33,3 +33,8 @@ test("sanity check IPv6 applySubnetMask()", () => {
     throw new Error(`'${output}' !== '${expected}'`);
   }
 });
+
+test("sanity check convertedEmbeddedIPv4", () => {
+  const output = ipv6.convertEmbeddedIPv4("2001:db8:122:344::192.0.2.33");
+  expect(output).toEqual("2001:db8:122:344::c00:221");
+});

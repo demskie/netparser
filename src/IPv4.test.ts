@@ -102,3 +102,42 @@ test("sanity check IPv4 networksIntersect() #3", () => {
   const output = shared.networksIntersect(alpha, bravo);
   expect(output).toEqual(false);
 });
+
+test("addrToBytes throws addrInvalidInteger", () => {
+  try {
+    ipv4.addrToBytes("-1.1.1.1", true);
+  } catch (e) {
+    expect(e.message).toEqual(errors.AddrInvalidInteger.message);
+  }
+});
+
+test("addrToBytes does not throw addrInvalidInteger", () => {
+  const output = ipv4.addrToBytes("-1.1.1.1", false);
+  expect(output).toEqual(null);
+});
+
+test("addrToBytes throws addrNotFourElements", () => {
+  try {
+    ipv4.addrToBytes("1.2.3.4.5", true);
+  } catch (e) {
+    expect(e.message).toEqual(errors.AddrNotFourElements.message);
+  }
+});
+
+test("addrToBytes does not throw addrNotFourElements", () => {
+  const output = ipv4.addrToBytes("1.2.3.4.5", false);
+  expect(output).toEqual(null);
+});
+
+test("bytesToAddr throws bytesNotFourElements", () => {
+  try {
+    ipv4.bytesToAddr(new Uint8Array(3), true);
+  } catch (e) {
+    expect(e.message).toEqual(errors.BytesNotFourElements.message);
+  }
+});
+
+test("bytesToAddr returns null", () => {
+  const output = ipv4.bytesToAddr(new Uint8Array(3), false);
+  expect(output).toEqual(null);
+});

@@ -110,11 +110,21 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > > &emsp;&#x25ab; strict<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Do not automatically mask addresses to baseAddresses</em>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
 >
+> <a name="api-networkContainsAddress"></a>
+> ### Function [`networkContainsAddress`](#api-networkContainsAddress)
+> <em>NetworkContainsAddress validates that the address is inside the network</em>  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L198-L204)  
+> > **networkContainsAddress( )** <sup>&rArr; <code>null | true | false</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L198-L204)  
+> > &emsp;&#x25aa; network <sup><code>string</code></sup> <em>- A network like 192.168.0.0/24</em>  
+> > &emsp;&#x25aa; address <sup><code>string</code></sup> <em>- A network like 192.168.0.100</em>  
+> > &emsp;&#x25ab; strict<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Do not automatically mask addresses to baseAddresses</em>  
+> > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
+>
 > <a name="api-networkContainsSubnet"></a>
 > ### Function [`networkContainsSubnet`](#api-networkContainsSubnet)
 > <em>NetworkContainsSubnet validates that the network is a valid supernet</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L198-L204)  
-> > **networkContainsSubnet( )** <sup>&rArr; <code>null | true | false</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L198-L204)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L219-L225)  
+> > **networkContainsSubnet( )** <sup>&rArr; <code>null | true | false</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L219-L225)  
 > > &emsp;&#x25aa; network <sup><code>string</code></sup> <em>- A network like 192.168.0.0/16</em>  
 > > &emsp;&#x25aa; subnet <sup><code>string</code></sup> <em>- A network like 192.168.0.0/24</em>  
 > > &emsp;&#x25ab; strict<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Do not automatically mask addresses to baseAddresses</em>  
@@ -123,8 +133,8 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > <a name="api-networksIntersect"></a>
 > ### Function [`networksIntersect`](#api-networksIntersect)
 > <em>NetworksIntersect returns a bool showing if the networks overlap</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L219-L225)  
-> > **networksIntersect( )** <sup>&rArr; <code>null | true | false</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L219-L225)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L240-L246)  
+> > **networksIntersect( )** <sup>&rArr; <code>null | true | false</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L240-L246)  
 > > &emsp;&#x25aa; network <sup><code>string</code></sup> <em>- A network like 192.168.0.0/23</em>  
 > > &emsp;&#x25aa; otherNetwork <sup><code>string</code></sup> <em>- A network like 192.168.1.0/24</em>  
 > > &emsp;&#x25ab; strict<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Do not automatically mask addresses to baseAddresses</em>  
@@ -133,8 +143,8 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > <a name="api-nextNetwork"></a>
 > ### Function [`nextNetwork`](#api-nextNetwork)
 > <em>NextNetwork returns the next network of the same size.</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L239-L246)  
-> > **nextNetwork( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L239-L246)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L260-L267)  
+> > **nextNetwork( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L260-L267)  
 > > &emsp;&#x25aa; network <sup><code>string</code></sup> <em>- A network like 192.168.0.0/24</em>  
 > > &emsp;&#x25ab; strict<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Do not automatically mask addresses to baseAddresses</em>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
@@ -142,8 +152,8 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > <a name="api-rangeOfNetworks"></a>
 > ### Function [`rangeOfNetworks`](#api-rangeOfNetworks)
 > <em>RangeOfNetworks returns an array of networks given a range of addresses</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L260-L287)  
-> > **rangeOfNetworks( )** <sup>&rArr; <code>null | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L260-L287)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L281-L308)  
+> > **rangeOfNetworks( )** <sup>&rArr; <code>null | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L281-L308)  
 > > &emsp;&#x25aa; startAddress <sup><code>string</code></sup> <em>- An address like 192.168.1.2</em>  
 > > &emsp;&#x25aa; stopAddress <sup><code>string</code></sup> <em>- An address like 192.168.1.5</em>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
