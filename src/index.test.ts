@@ -61,6 +61,11 @@ test("sanity check networksIntersect", () => {
   expect(output).toEqual(false);
 });
 
+test("sanity check nextAddress", () => {
+  const output = index.nextAddress("192.168.0.0", true);
+  expect(output).toEqual("192.168.0.1");
+});
+
 test("sanity check nextNetwork", () => {
   const output = index.nextNetwork("192.168.0.0/24", true, true);
   expect(output).toEqual("192.168.1.0/24");

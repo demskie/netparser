@@ -246,6 +246,26 @@ export function networksIntersect(network: string, otherNetwork: string, strict?
 }
 
 /**
+ * NextAddress returns the next address
+ *
+ * @example
+ * netparser.nextAddress("192.168.0.0")  // returns 192.168.0.1
+ *
+ * @param address - An address like 192.168.0.0
+ * @param throwErrors - Stop the library from failing silently
+ *
+ * @returns An address string or null in case of error
+ */
+export function nextAddress(address: string, throwErrors?: boolean) {
+  const bytes = shared.parseAddressString(address, throwErrors);
+  if (!bytes) return null;
+  if (!shared.increaseAddressWithCIDR(bytes, bytes.length * 8, throwErrors)) return null;
+  const addr = shared.bytesToAddr(bytes, throwErrors);
+  if (!addr) return null;
+  return `${addr}`;
+}
+
+/**
  * NextNetwork returns the next network of the same size.
  *
  * @example
@@ -317,6 +337,7 @@ module.exports = {
   networkContainsAddress,
   networkContainsSubnet,
   networksIntersect,
+  nextAddress,
   nextNetwork,
   rangeOfNetworks
 };

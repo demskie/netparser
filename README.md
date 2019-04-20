@@ -40,6 +40,9 @@ netparser.networkContainsSubnet('192.168.0.0/16', '192.168.0.0/24');
 netparser.networksIntersect('192.168.0.0/23', '192.168.1.0/24');
 // returns true
 
+netparser.nextAddress('192.168.0.0');
+// returns '192.168.0.1'
+
 netparser.nextNetwork('192.168.0.0/24');
 // returns '192.168.1.0/24'
 
@@ -140,11 +143,19 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > > &emsp;&#x25ab; strict<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Do not automatically mask addresses to baseAddresses</em>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
 >
+> <a name="api-nextAddress"></a>
+> ### Function [`nextAddress`](#api-nextAddress)
+> <em>NextAddress returns the next address</em>  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L259-L266)  
+> > **nextAddress( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L259-L266)  
+> > &emsp;&#x25aa; address <sup><code>string</code></sup> <em>- An address like 192.168.0.0</em>  
+> > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
+>
 > <a name="api-nextNetwork"></a>
 > ### Function [`nextNetwork`](#api-nextNetwork)
 > <em>NextNetwork returns the next network of the same size.</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L260-L267)  
-> > **nextNetwork( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L260-L267)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L280-L287)  
+> > **nextNetwork( )** <sup>&rArr; <code>null | string</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L280-L287)  
 > > &emsp;&#x25aa; network <sup><code>string</code></sup> <em>- A network like 192.168.0.0/24</em>  
 > > &emsp;&#x25ab; strict<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Do not automatically mask addresses to baseAddresses</em>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
@@ -152,8 +163,8 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > <a name="api-rangeOfNetworks"></a>
 > ### Function [`rangeOfNetworks`](#api-rangeOfNetworks)
 > <em>RangeOfNetworks returns an array of networks given a range of addresses</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L281-L308)  
-> > **rangeOfNetworks( )** <sup>&rArr; <code>null | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L281-L308)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L301-L328)  
+> > **rangeOfNetworks( )** <sup>&rArr; <code>null | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src\index.ts#L301-L328)  
 > > &emsp;&#x25aa; startAddress <sup><code>string</code></sup> <em>- An address like 192.168.1.2</em>  
 > > &emsp;&#x25aa; stopAddress <sup><code>string</code></sup> <em>- An address like 192.168.1.5</em>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
