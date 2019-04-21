@@ -62,7 +62,7 @@ export function getCIDR(s: string, throwErrors?: boolean) {
 }
 
 export function removeBrackets(s: string) {
-  return s.replace("[|]", "");
+  return s.replace(/[[\]]/g, "");
 }
 
 export function duplicateAddress(address: Address) {
