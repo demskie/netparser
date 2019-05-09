@@ -327,6 +327,44 @@ export function rangeOfNetworks(startAddress: string, stopAddress: string, throw
   return results;
 }
 
+/**
+ * Summarize returns an array of aggregates given a list of networks
+ *
+ * @example
+ * netparser.summarize(["192.168.1.1", "192.168.0.0/16", "192.168.2.3/31"])  // returns ["192.168.0.0/16"]
+ *
+ * @param addrOrSubnetArray - An array of addresses or subnets
+ * @param strict - Do not automatically mask addresses to baseAddresses
+ * @param throwErrors - Stop the library from failing silently
+ *
+ * @returns An array of networks or null in case of error
+ */
+export function summarize(addrOrSubnetArray: string[], strict?: boolean, throwErrors?: boolean) {
+  let subnets = [] as shared.Network[];
+  for (let netString of addrOrSubnetArray) {
+    let net = shared.parseNetworkString(netString, strict, false);
+    if (!net) {
+      const addr = shared.parseAddressString(netString, throwErrors);
+      if (!addr) return null;
+      if (addr.length == 4) {
+        net = { bytes: addr, cidr: 32 };
+      } else {
+        net = { bytes: addr, cidr: 128 };
+      }
+      if (subnets.length > 0 && subnets[0].bytes.length !== net.bytes.length) {
+        if (throwErrors) throw errors.MixingIPv4AndIPv6;
+        return null;
+      }
+    }
+    subnets.push(net);
+  }
+  subnets = shared.sortNetworks(subnets);
+  let largestSubnet = subnets.pop();
+  for (let subnet of subnets) {
+    // TODO
+  }
+}
+
 module.exports = {
   baseAddress,
   broadcastAddress,
@@ -339,7 +377,8 @@ module.exports = {
   networksIntersect,
   nextAddress,
   nextNetwork,
-  rangeOfNetworks
+  rangeOfNetworks,
+  summarize
 };
 
 // The following functions are pending an implementation:

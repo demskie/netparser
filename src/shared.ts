@@ -297,3 +297,11 @@ export function findNetworkWithoutIntersection(network: Network, otherNetworks: 
   }
   return null;
 }
+
+export function sortNetworks(networks: Network[]) {
+  let arr = [] as Network[];
+  if (networks.length > 0) {
+    // TODO
+  }
+  return arr;
+}
