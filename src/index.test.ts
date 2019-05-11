@@ -125,3 +125,8 @@ test("sanity check rangeOfNetworks IPv6", () => {
     "2001:440:ffff:ffff::/65"
   ]);
 });
+
+test("sanity check sort", () => {
+  const output = index.sort(["192.168.2.3/31", "255.255.255.255", "192.168.0.0/16"], true);
+  expect(output).toEqual(["192.168.0.0/16", "192.168.2.3/31", "255.255.255.255/32"]);
+});

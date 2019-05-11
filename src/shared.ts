@@ -299,8 +299,8 @@ export function findNetworkWithoutIntersection(network: Network, otherNetworks: 
 }
 
 enum IPVersion {
-  v4 = 4,
-  v6 = 6
+  v4,
+  v6
 }
 
 function specificNetworks(networks: Network[], version: IPVersion) {
@@ -337,10 +337,10 @@ function radixSortNetworks(networks: Network[], version: IPVersion) {
       // count each occurance of byte value
       for (let net of networks) {
         if (byteIndex < byteLength) {
-          net.bytes[byteIndex] = Math.min(Math.max(0, Math.floor(net.cidr), 255));
+          net.bytes[byteIndex] = Math.min(Math.max(0, net.bytes[byteIndex]), 255);
           counts[net.bytes[byteIndex]]++;
         } else {
-          net.cidr = Math.min(Math.max(0, Math.floor(net.cidr), maxCIDR));
+          net.cidr = Math.min(Math.max(0, net.cidr), maxCIDR);
           counts[net.cidr]++;
         }
       }
@@ -373,15 +373,18 @@ function radixSortNetworks(networks: Network[], version: IPVersion) {
         } else {
           value = networks[idx].cidr;
         }
-        if (runningPrefixSum[value] < offsetPrefixSum[value]) {
-          let idxOther = runningPrefixSum[value];
-          let original = networks[idxOther];
-          networks[idxOther] = networks[idx];
-          networks[idx] = original;
-          offsetPrefixSum[value]++;
+        if (runningPrefixSum[value] !== idx) {
+          if (runningPrefixSum[value] < offsetPrefixSum[value]) {
+            let x = networks[runningPrefixSum[value]];
+            networks[runningPrefixSum[value]] = networks[idx];
+            networks[idx] = x;
+          } else {
+            idx++;
+          }
         } else {
           idx++;
         }
+        runningPrefixSum[value]++;
       }
     }
   }
