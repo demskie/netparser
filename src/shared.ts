@@ -298,10 +298,74 @@ export function findNetworkWithoutIntersection(network: Network, otherNetworks: 
   return null;
 }
 
-export function sortNetworks(networks: Network[]) {
-  let arr = [] as Network[];
-  if (networks.length > 0) {
-    // TODO
+export enum IPVersion {
+  v4 = 4,
+  v6 = 6
+}
+
+export function sortNetworks(networks: Network[], version: IPVersion) {
+  if (networks.length > 0 || version === IPVersion.v4 || version === IPVersion.v6) {
+    const counts = new Array(256) as number[];
+    const offsetPrefixSum = new Array(256) as number[];
+    const byteLength = version === IPVersion.v4 ? 4 : 16;
+    const maxCIDR = version === IPVersion.v4 ? 32 : 128;
+
+    // in place swap and sort for every byte (including CIDR)
+    for (let byteIndex = 0; byteIndex <= byteLength; byteIndex++) {
+      for (let i = 0; i < counts.length; i++) {
+        counts[i] = 0;
+      }
+
+      // count each occurance of byte value
+      for (let net of networks) {
+        if (byteIndex < byteLength) {
+          net.bytes[byteIndex] = Math.min(Math.max(0, Math.floor(net.cidr), 255));
+          counts[net.bytes[byteIndex]]++;
+        } else {
+          net.cidr = Math.min(Math.max(0, Math.floor(net.cidr), maxCIDR));
+          counts[net.cidr]++;
+        }
+      }
+
+      // initialize runningPrefixSum
+      let total = 0;
+      let oldCount = 0;
+      const runningPrefixSum = counts;
+      for (let i = 0; i < 256; i++) {
+        oldCount = counts[i];
+        runningPrefixSum[i] = total;
+        total += oldCount;
+      }
+
+      // initialize offsetPrefixSum (american flag sort)
+      for (let i = 0; i < 256; i++) {
+        if (i < 255) {
+          offsetPrefixSum[i] = runningPrefixSum[i + 1];
+        } else {
+          offsetPrefixSum[i] = runningPrefixSum[i];
+        }
+      }
+
+      // in place swap and sort by value
+      let idx = 0;
+      let value = 0;
+      while (idx < networks.length) {
+        if (byteIndex < byteLength) {
+          value = networks[idx].bytes[byteIndex];
+        } else {
+          value = networks[idx].cidr;
+        }
+        if (runningPrefixSum[value] < offsetPrefixSum[value]) {
+          let idxOther = runningPrefixSum[value];
+          let original = networks[idxOther];
+          networks[idxOther] = networks[idx];
+          networks[idx] = original;
+          offsetPrefixSum[value]++;
+        } else {
+          idx++;
+        }
+      }
+    }
   }
-  return arr;
+  return networks;
 }
