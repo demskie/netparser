@@ -298,12 +298,30 @@ export function findNetworkWithoutIntersection(network: Network, otherNetworks: 
   return null;
 }
 
-export enum IPVersion {
+enum IPVersion {
   v4 = 4,
   v6 = 6
 }
 
-export function sortNetworks(networks: Network[], version: IPVersion) {
+function specificNetworks(networks: Network[], version: IPVersion) {
+  const results = [] as Network[];
+  if (version === IPVersion.v4) {
+    for (let network of networks) {
+      if (network.bytes.length === 4) {
+        results.push(network);
+      }
+    }
+  } else if (version === IPVersion.v6) {
+    for (let network of networks) {
+      if (network.bytes.length === 16) {
+        results.push(network);
+      }
+    }
+  }
+  return results;
+}
+
+function radixSortNetworks(networks: Network[], version: IPVersion) {
   if (networks.length > 0 || version === IPVersion.v4 || version === IPVersion.v6) {
     const counts = new Array(256) as number[];
     const offsetPrefixSum = new Array(256) as number[];
@@ -368,4 +386,12 @@ export function sortNetworks(networks: Network[], version: IPVersion) {
     }
   }
   return networks;
+}
+
+export function sortNetworks(networks: Network[]) {
+  const v4 = specificNetworks(networks, IPVersion.v4);
+  const v6 = specificNetworks(networks, IPVersion.v6);
+  radixSortNetworks(v4, IPVersion.v4);
+  radixSortNetworks(v6, IPVersion.v6);
+  return [...v4, ...v6];
 }
