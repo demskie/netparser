@@ -266,6 +266,14 @@ export function networksIntersect(net: Network, otherNet: Network, throwErrors?:
   return true;
 }
 
+export function networksAreAdjacent(net: Network, otherNet: Network, throwErrors?: boolean) {
+  if (net.bytes.length !== otherNet.bytes.length) return false;
+  const netBytes = duplicateAddress(net.bytes);
+  if (!increaseAddressWithCIDR(netBytes, net.cidr, throwErrors)) return false;
+  if (compareAddresses(netBytes, otherNet.bytes) === 0) return true;
+  return false;
+}
+
 export function findNetworkIntersection(network: Network, otherNetworks: Network[]) {
   for (var otherNet of otherNetworks) {
     if (networksIntersect(network, otherNet)) {
