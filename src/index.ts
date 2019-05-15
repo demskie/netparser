@@ -400,10 +400,33 @@ export function summarize(networks: string[], strict?: boolean, throwErrors?: bo
     subnets[i] = net;
   }
   subnets = shared.sortNetworks(subnets);
-  let largestSubnet = subnets.pop();
-  for (let subnet of subnets) {
-    // TODO
+  const aggregates = [] as shared.Network[];
+  for (let idx = 0; idx < subnets.length; idx++) {
+    aggregates.push(subnets[idx]);
+    let skipped = 0;
+    for (let i = idx + 1; i < subnets.length; i++) {
+      if (shared.networkContainsSubnet(subnets[idx], subnets[i])) {
+        skipped++;
+        continue;
+      }
+      if (subnets[idx].cidr === subnets[i].cidr) {
+        if (shared.networksAreAdjacent(subnets[idx], subnets[i])) {
+          subnets[idx].cidr--;
+          skipped++;
+          continue;
+        }
+      }
+      break;
+    }
+    idx += skipped;
   }
+  const results = new Array(aggregates.length) as string[];
+  for (let i = 0; i < aggregates.length; i++) {
+    let s = shared.bytesToAddr(aggregates[i].bytes, throwErrors);
+    if (!s) return null;
+    results[i] = `${s}/${aggregates[i].cidr}`;
+  }
+  return results;
 }
 
 module.exports = {
