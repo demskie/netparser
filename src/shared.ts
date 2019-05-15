@@ -235,7 +235,7 @@ export function networkContainsSubnet(net: Network, subnet: Network, throwErrors
   const netBytesEnd = duplicateAddress(net.bytes);
   if (!increaseAddressWithCIDR(netBytesEnd, net.cidr, throwErrors)) return false;
   const subnetBytesEnd = duplicateAddress(subnet.bytes);
-  if (!increaseAddressWithCIDR(subnet.bytes, subnet.cidr, throwErrors)) return false;
+  if (!increaseAddressWithCIDR(subnetBytesEnd, subnet.cidr, throwErrors)) return false;
   if (compareAddresses(netBytesEnd, subnetBytesEnd) < 0) return false;
   return true;
 }
