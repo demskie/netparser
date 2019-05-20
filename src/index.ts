@@ -331,7 +331,7 @@ export function rangeOfNetworks(startAddress: string, stopAddress: string, throw
  * Sort returns an array of sorted networks
  *
  * @example
- * netparser.sort(["255.255.255.255", "192.168.2.3/31", "192.168.0.0/16"])  // returns ["192.168.0.0/16", "192.168.2.3/31", "255.255.255.255/32"]
+ * netparser.sort(["255.255.255.255", "192.168.0.0/16", "192.168.2.3/31", ])  // returns ["192.168.0.0/16", "192.168.2.3/31", "255.255.255.255/32"]
  *
  * @param networkAddresses - An array of addresses or subnets
  * @param throwErrors - Stop the library from failing silently
