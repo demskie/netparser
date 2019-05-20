@@ -235,7 +235,7 @@ export function networkContainsSubnet(net: Network, subnet: Network, throwErrors
   const netBytesEnd = duplicateAddress(net.bytes);
   if (!increaseAddressWithCIDR(netBytesEnd, net.cidr, throwErrors)) return false;
   const subnetBytesEnd = duplicateAddress(subnet.bytes);
-  if (!increaseAddressWithCIDR(subnet.bytes, subnet.cidr, throwErrors)) return false;
+  if (!increaseAddressWithCIDR(subnetBytesEnd, subnet.cidr, throwErrors)) return false;
   if (compareAddresses(netBytesEnd, subnetBytesEnd) < 0) return false;
   return true;
 }
@@ -264,6 +264,14 @@ export function networksIntersect(net: Network, otherNet: Network, throwErrors?:
   }
   if (compareAddresses(alphaEnd, bravoStart) < 0) return false;
   return true;
+}
+
+export function networksAreAdjacent(net: Network, otherNet: Network, throwErrors?: boolean) {
+  if (net.bytes.length !== otherNet.bytes.length) return false;
+  const netBytes = duplicateAddress(net.bytes);
+  if (!increaseAddressWithCIDR(netBytes, net.cidr, throwErrors)) return false;
+  if (compareAddresses(netBytes, otherNet.bytes) === 0) return true;
+  return false;
 }
 
 export function findNetworkIntersection(network: Network, otherNetworks: Network[]) {
@@ -296,4 +304,105 @@ export function findNetworkWithoutIntersection(network: Network, otherNetworks: 
     currentNetwork.cidr++;
   }
   return null;
+}
+
+enum IPVersion {
+  v4,
+  v6
+}
+
+function specificNetworks(networks: Network[], version: IPVersion) {
+  const results = [] as Network[];
+  if (version === IPVersion.v4) {
+    for (let network of networks) {
+      if (network.bytes.length === 4) {
+        results.push(network);
+      }
+    }
+  } else if (version === IPVersion.v6) {
+    for (let network of networks) {
+      if (network.bytes.length === 16) {
+        results.push(network);
+      }
+    }
+  }
+  return results;
+}
+
+function radixSortNetworks(networks: Network[], version: IPVersion) {
+  if (networks.length > 0 || version === IPVersion.v4 || version === IPVersion.v6) {
+    const counts = new Array(256) as number[];
+    const offsetPrefixSum = new Array(256) as number[];
+    const byteLength = version === IPVersion.v4 ? 4 : 16;
+    const maxCIDR = version === IPVersion.v4 ? 32 : 128;
+
+    // in place swap and sort for every byte (including CIDR)
+    for (let byteIndex = 0; byteIndex <= byteLength; byteIndex++) {
+      for (let i = 0; i < counts.length; i++) {
+        counts[i] = 0;
+      }
+
+      // count each occurance of byte value
+      for (let net of networks) {
+        if (byteIndex < byteLength) {
+          net.bytes[byteIndex] = Math.min(Math.max(0, net.bytes[byteIndex]), 255);
+          counts[net.bytes[byteIndex]]++;
+        } else {
+          net.cidr = Math.min(Math.max(0, net.cidr), maxCIDR);
+          counts[net.cidr]++;
+        }
+      }
+
+      // initialize runningPrefixSum
+      let total = 0;
+      let oldCount = 0;
+      const runningPrefixSum = counts;
+      for (let i = 0; i < 256; i++) {
+        oldCount = counts[i];
+        runningPrefixSum[i] = total;
+        total += oldCount;
+      }
+
+      // initialize offsetPrefixSum (american flag sort)
+      for (let i = 0; i < 256; i++) {
+        if (i < 255) {
+          offsetPrefixSum[i] = runningPrefixSum[i + 1];
+        } else {
+          offsetPrefixSum[i] = runningPrefixSum[i];
+        }
+      }
+
+      // in place swap and sort by value
+      let idx = 0;
+      let value = 0;
+      while (idx < networks.length) {
+        if (byteIndex < byteLength) {
+          value = networks[idx].bytes[byteIndex];
+        } else {
+          value = networks[idx].cidr;
+        }
+        if (runningPrefixSum[value] !== idx) {
+          if (runningPrefixSum[value] < offsetPrefixSum[value]) {
+            let x = networks[runningPrefixSum[value]];
+            networks[runningPrefixSum[value]] = networks[idx];
+            networks[idx] = x;
+          } else {
+            idx++;
+          }
+        } else {
+          idx++;
+        }
+        runningPrefixSum[value]++;
+      }
+    }
+  }
+  return networks;
+}
+
+export function sortNetworks(networks: Network[]) {
+  const v4 = specificNetworks(networks, IPVersion.v4);
+  const v6 = specificNetworks(networks, IPVersion.v6);
+  radixSortNetworks(v4, IPVersion.v4);
+  radixSortNetworks(v6, IPVersion.v6);
+  return [...v4, ...v6];
 }
