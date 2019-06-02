@@ -327,107 +327,84 @@ export function rangeOfNetworks(startAddress: string, stopAddress: string, throw
   return results;
 }
 
-/**
- * Sort returns an array of sorted networks
- *
- * @example
- * netparser.sort(["255.255.255.255", "192.168.0.0/16", "192.168.2.3/31", ])  // returns ["192.168.0.0/16", "192.168.2.3/31", "255.255.255.255/32"]
- *
- * @param networkAddresses - An array of addresses or subnets
- * @param throwErrors - Stop the library from failing silently
- *
- * @returns An array of networks or null in case of error
- */
-export function sort(networkAddresses: string[], throwErrors?: boolean) {
-  let subnets = new Array(networkAddresses.length) as shared.Network[];
-  let foundCIDR = false;
-  for (let i = 0; i < networkAddresses.length; i++) {
-    const netString = networkAddresses[i];
-    const addr = shared.parseAddressString(netString, throwErrors);
-    if (!addr) return null;
-    let cidr = shared.getCIDR(netString);
-    if (!cidr) {
-      if (addr.length == 4) {
-        cidr = 32;
-      } else {
-        cidr = 128;
-      }
-    } else {
-      foundCIDR = true;
-    }
-    subnets[i] = { bytes: addr, cidr: cidr };
-  }
-  subnets = shared.sortNetworks(subnets);
-  const results = new Array(subnets.length) as string[];
-  for (let i = 0; i < subnets.length; i++) {
-    let s = shared.bytesToAddr(subnets[i].bytes, throwErrors);
-    if (!s) return null;
-    results[i] = foundCIDR ? `${s}/${subnets[i].cidr}` : `${s}`;
-  }
-  return results;
-}
+//export function sort(networkAddresses: string[], throwErrors?: boolean) {
+//  let subnets = new Array(networkAddresses.length) as shared.Network[];
+//  let foundCIDR = false;
+//  for (let i = 0; i < networkAddresses.length; i++) {
+//    const netString = networkAddresses[i];
+//    const addr = shared.parseAddressString(netString, throwErrors);
+//    if (!addr) return null;
+//    let cidr = shared.getCIDR(netString);
+//    if (!cidr) {
+//      if (addr.length == 4) {
+//        cidr = 32;
+//      } else {
+//        cidr = 128;
+//      }
+//    } else {
+//      foundCIDR = true;
+//    }
+//    subnets[i] = { bytes: addr, cidr: cidr };
+//  }
+//  subnets = shared.sortNetworks(subnets);
+//  const results = new Array(subnets.length) as string[];
+//  for (let i = 0; i < subnets.length; i++) {
+//    let s = shared.bytesToAddr(subnets[i].bytes, throwErrors);
+//    if (!s) return null;
+//    results[i] = foundCIDR ? `${s}/${subnets[i].cidr}` : `${s}`;
+//  }
+//  return results;
+//}
 
-/**
- * Summarize returns an array of aggregates given a list of networks
- *
- * @example
- * netparser.summarize(["192.168.1.1", "192.168.0.0/16", "192.168.2.3/31"])  // returns ["192.168.0.0/16"]
- *
- * @param networks - An array of addresses or subnets
- * @param strict - Do not automatically mask addresses to baseAddresses
- * @param throwErrors - Stop the library from failing silently
- *
- * @returns An array of networks or null in case of error
- */
-export function summarize(networks: string[], strict?: boolean, throwErrors?: boolean) {
-  let subnets = [] as shared.Network[];
-  for (let i = 0; i < networks.length; i++) {
-    const netString = networks[i];
-    let net = shared.parseNetworkString(netString, strict, false);
-    if (!net) {
-      const addr = shared.parseAddressString(netString, throwErrors);
-      if (!addr) return null;
-      if (addr.length == 4) {
-        net = { bytes: addr, cidr: 32 };
-      } else {
-        net = { bytes: addr, cidr: 128 };
-      }
-      if (subnets.length > 0 && subnets[0].bytes.length !== net.bytes.length) {
-        if (throwErrors) throw errors.MixingIPv4AndIPv6;
-        return null;
-      }
-    }
-    subnets[i] = net;
-  }
-  subnets = shared.sortNetworks(subnets);
-  const aggregates = [] as shared.Network[];
-  for (let idx = 0; idx < subnets.length; idx++) {
-    aggregates.push(subnets[idx]);
-    let skipped = 0;
-    for (let i = idx + 1; i < subnets.length; i++) {
-      if (shared.networkContainsSubnet(subnets[idx], subnets[i])) {
-        skipped++;
-        continue;
-      }
-      if (subnets[idx].cidr === subnets[i].cidr) {
-        if (shared.networksAreAdjacent(subnets[idx], subnets[i])) {
-          subnets[idx].cidr--;
-          skipped++;
-          continue;
-        }
-      }
-      break;
-    }
-    idx += skipped;
-  }
-  const results = new Array(aggregates.length) as string[];
-  for (let i = 0; i < aggregates.length; i++) {
-    let s = shared.bytesToAddr(aggregates[i].bytes, throwErrors);
-    if (!s) return null;
-    results[i] = `${s}/${aggregates[i].cidr}`;
-  }
-  return results;
-}
+//export function summarize(networks: string[], strict?: boolean, throwErrors?: boolean) {
+//  let subnets = [] as shared.Network[];
+//  for (let i = 0; i < networks.length; i++) {
+//    const netString = networks[i];
+//    let net = shared.parseNetworkString(netString, strict, false);
+//    if (!net) {
+//      const addr = shared.parseAddressString(netString, throwErrors);
+//      if (!addr) return null;
+//      if (addr.length == 4) {
+//        net = { bytes: addr, cidr: 32 };
+//      } else {
+//        net = { bytes: addr, cidr: 128 };
+//      }
+//      if (subnets.length > 0 && subnets[0].bytes.length !== net.bytes.length) {
+//        if (throwErrors) throw errors.MixingIPv4AndIPv6;
+//        return null;
+//      }
+//    }
+//    subnets[i] = net;
+//  }
+//  subnets = shared.sortNetworks(subnets);
+//  const aggregates = [] as shared.Network[];
+//  for (let idx = 0; idx < subnets.length; idx++) {
+//    aggregates.push(subnets[idx]);
+//    let skipped = 0;
+//    for (let i = idx + 1; i < subnets.length; i++) {
+//      if (shared.networkContainsSubnet(subnets[idx], subnets[i])) {
+//        skipped++;
+//        continue;
+//      }
+//      if (subnets[idx].cidr === subnets[i].cidr) {
+//        if (shared.networksAreAdjacent(subnets[idx], subnets[i])) {
+//          subnets[idx].cidr--;
+//          skipped++;
+//          continue;
+//        }
+//      }
+//      break;
+//    }
+//    idx += skipped;
+//  }
+//  const results = new Array(aggregates.length) as string[];
+//  for (let i = 0; i < aggregates.length; i++) {
+//    let s = shared.bytesToAddr(aggregates[i].bytes, throwErrors);
+//    if (!s) return null;
+//    results[i] = `${s}/${aggregates[i].cidr}`;
+//  }
+//  return results;
+//}
 
 module.exports = {
   baseAddress,
