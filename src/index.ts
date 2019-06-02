@@ -442,8 +442,8 @@ module.exports = {
   nextAddress,
   nextNetwork,
   rangeOfNetworks,
-  sort,
-  summarize
+  // sort
+  // summarize
 };
 
 // The following functions are pending an implementation:
