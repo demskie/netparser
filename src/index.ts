@@ -441,7 +441,7 @@ module.exports = {
   networksIntersect,
   nextAddress,
   nextNetwork,
-  rangeOfNetworks,
+  rangeOfNetworks
   // sort
   // summarize
 };
