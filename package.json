@@ -1,6 +1,6 @@
 {
   "name": "netparser",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "parse and manipulate network addresses",
   "main": "lib/index.js",
   "scripts": {
