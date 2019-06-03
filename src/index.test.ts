@@ -127,9 +127,9 @@ test("sanity check rangeOfNetworks IPv6", () => {
 });
 
 test("sanity check sort", () => {
-  const data = ["3.0.0.0", "6.0.0.0", "2.0.0.0", "7.0.0.0", "7.0.0.0", "4.0.0.0", "0.0.0.0", "6.0.0.0", "0.0.0.0"];
-  index.sort(data, true);
-  expect(data).toEqual([
+  const input = ["3.0.0.0", "6.0.0.0", "2.0.0.0", "7.0.0.0", "7.0.0.0", "4.0.0.0", "0.0.0.0", "6.0.0.0", "0.0.0.0"];
+  const output = index.sort(input, true);
+  expect(output).toEqual([
     "0.0.0.0",
     "0.0.0.0",
     "2.0.0.0",
@@ -143,7 +143,7 @@ test("sanity check sort", () => {
 });
 
 test("sanity check sort", () => {
-  const data = [
+  const input = [
     "18.208.0.0/13",
     "52.95.245.0/24",
     "52.194.0.0/15",
@@ -165,8 +165,8 @@ test("sanity check sort", () => {
     "125.47.180.182",
     "88.77.177.149"
   ];
-  index.sort(data, true);
-  expect(data).toEqual([
+  const output = index.sort(input, true);
+  expect(output).toEqual([
     "13.210.0.0/15",
     "18.208.0.0/13",
     "52.94.17.0/24",

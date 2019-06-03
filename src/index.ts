@@ -331,7 +331,7 @@ export function rangeOfNetworks(startAddress: string, stopAddress: string, throw
  * Sort returns an array of sorted networks
  *
  * @example
- * netparser.sort(["255.255.255.255", "192.168.0.0/16", "192.168.2.3/31", ])  // returns ["192.168.0.0/16", "192.168.2.3/31", "255.255.255.255/32"]
+ * netparser.sort(["255.255.255.255", "192.168.0.0/16", "192.168.2.3/31" ])  // returns ["192.168.0.0/16", "192.168.2.3/31", "255.255.255.255/32"]
  *
  * @param networkAddresses - An array of addresses or subnets
  * @param throwErrors - Stop the library from failing silently
@@ -358,12 +358,13 @@ export function sort(networkAddresses: string[], throwErrors?: boolean) {
     subnets[i] = { bytes: addr, cidr: cidr };
   }
   shared.sortNetworks(subnets);
+  const results = new Array(subnets.length) as string[];
   for (let i = 0; i < subnets.length; i++) {
     let s = shared.bytesToAddr(subnets[i].bytes, throwErrors);
     if (!s) return null;
-    networkAddresses[i] = foundCIDR ? `${s}/${subnets[i].cidr}` : `${s}`;
+    results[i] = foundCIDR ? `${s}/${subnets[i].cidr}` : `${s}`;
   }
-  return;
+  return results;
 }
 
 /**
