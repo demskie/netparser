@@ -48,11 +48,17 @@ netparser.nextNetwork('192.168.0.0/24');
 
 netparser.rangeOfNetworks('192.168.1.2', '192.168.2.2');
 // returns ['192.168.1.2/31', '192.168.1.4/30', '192.168.1.8/29', '192.168.1.16/28', '192.168.1.32/27', '192.168.1.64/26', '192.168.1.128/25', '192.168.2.0/31', '192.168.2.2/32']
+
+netparser.sort(['255.255.255.255', '192.168.0.0/16', '192.168.2.3/31']);
+// returns ['192.168.0.0/16', '192.168.2.3/31', '255.255.255.255/32']
+
+netparser.summarize(['192.168.1.1', '192.168.0.0/16', '192.168.2.3/31']);
+// returns ['192.168.0.0/16']
 ```
 
 ## FYI
 
-- For simplicity, the above functions will only ever return `String, String[], boolean or null`.
+- For simplicity, the above functions will only ever return `String, String[], boolean, or null`.
 - By default the library will fail silently and `null` is returned when errors are encountered. To override this setting set the optional `throwErrors` parameter to `True`.
 - By default the library will conveniently mask out provided `network` values to their base address when such an operation makes sense. To override this setting set the optional `strict` parameter to `True` where applicable.
 
@@ -167,4 +173,21 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > > **rangeOfNetworks( )** <sup>&rArr; <code>null | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L301-L328)  
 > > &emsp;&#x25aa; startAddress <sup><code>string</code></sup> <em>- An address like 192.168.1.2</em>  
 > > &emsp;&#x25aa; stopAddress <sup><code>string</code></sup> <em>- An address like 192.168.1.5</em>  
+> > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
+>
+> <a name="api-sort"></a>
+> ### Function [`sort`](#api-sort)
+> <em>Sort returns an array of sorted networks</em>  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L341-L368)  
+> > **sort( )** <sup>&rArr; <code>null | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L341-L368)  
+> > &emsp;&#x25aa; networkAddresses <sup><code>string[]</code></sup> <em>- An array of addresses or subnets</em>  
+> > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
+>
+> <a name="api-summarize"></a>
+> ### Function [`summarize`](#api-summarize)
+> <em>Summarize returns an array of aggregates given a list of networks</em>  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L382-L430)  
+> > **summarize( )** <sup>&rArr; <code>null | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L382-L430)  
+> > &emsp;&#x25aa; networks <sup><code>string[]</code></sup> <em>- An array of addresses or subnets</em>  
+> > &emsp;&#x25ab; strict<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Do not automatically mask addresses to baseAddresses</em>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  

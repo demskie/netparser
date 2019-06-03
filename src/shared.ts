@@ -306,103 +306,90 @@ export function findNetworkWithoutIntersection(network: Network, otherNetworks: 
   return null;
 }
 
-enum IPVersion {
-  v4,
-  v6
-}
+function radixSortNetworks(networks: Network[], start: number, stop: number, byteIndex: number) {
+  const runningPrefixSum = new Array(256) as number[];
+  const offsetPrefixSum = new Array(256) as number[];
+  const counts = runningPrefixSum;
+  for (let i = 0; i < counts.length; i++) {
+    counts[i] = 0;
+  }
 
-function specificNetworks(networks: Network[], version: IPVersion) {
-  const results = [] as Network[];
-  if (version === IPVersion.v4) {
-    for (let network of networks) {
-      if (network.bytes.length === 4) {
-        results.push(network);
+  // count each occurance of byte value
+  for (let i = start; i < stop; i++) {
+    if (byteIndex === -1) {
+      counts[networks[i].bytes.length]++;
+    } else if (byteIndex < 16) {
+      if (byteIndex < networks[i].bytes.length) {
+        networks[i].bytes[byteIndex] = Math.min(Math.max(0, networks[i].bytes[byteIndex]), 255);
       }
-    }
-  } else if (version === IPVersion.v6) {
-    for (let network of networks) {
-      if (network.bytes.length === 16) {
-        results.push(network);
-      }
+      counts[networks[i].bytes[byteIndex]]++;
+    } else {
+      networks[i].cidr = Math.min(Math.max(0, networks[i].cidr), 8 * networks[i].bytes.length);
+      counts[networks[i].cidr]++;
     }
   }
-  return results;
-}
+  let lastCount = counts[counts.length - 1];
 
-function radixSortNetworks(networks: Network[], version: IPVersion) {
-  if (networks.length > 0 || version === IPVersion.v4 || version === IPVersion.v6) {
-    const counts = new Array(256) as number[];
-    const offsetPrefixSum = new Array(256) as number[];
-    const byteLength = version === IPVersion.v4 ? 4 : 16;
-    const maxCIDR = version === IPVersion.v4 ? 32 : 128;
+  // initialize runningPrefixSum
+  let total = 0;
+  let oldCount = 0;
+  for (let i = 0; i < 256; i++) {
+    oldCount = counts[i];
+    runningPrefixSum[i] = total;
+    total += oldCount;
+  }
 
-    // in place swap and sort for every byte (including CIDR)
-    for (let byteIndex = 0; byteIndex <= byteLength; byteIndex++) {
-      for (let i = 0; i < counts.length; i++) {
-        counts[i] = 0;
-      }
-
-      // count each occurance of byte value
-      for (let net of networks) {
-        if (byteIndex < byteLength) {
-          net.bytes[byteIndex] = Math.min(Math.max(0, net.bytes[byteIndex]), 255);
-          counts[net.bytes[byteIndex]]++;
-        } else {
-          net.cidr = Math.min(Math.max(0, net.cidr), maxCIDR);
-          counts[net.cidr]++;
-        }
-      }
-
-      // initialize runningPrefixSum
-      let total = 0;
-      let oldCount = 0;
-      const runningPrefixSum = counts;
-      for (let i = 0; i < 256; i++) {
-        oldCount = counts[i];
-        runningPrefixSum[i] = total;
-        total += oldCount;
-      }
-
-      // initialize offsetPrefixSum (american flag sort)
-      for (let i = 0; i < 256; i++) {
-        if (i < 255) {
-          offsetPrefixSum[i] = runningPrefixSum[i + 1];
-        } else {
-          offsetPrefixSum[i] = runningPrefixSum[i];
-        }
-      }
-
-      // in place swap and sort by value
-      let idx = 0;
-      let value = 0;
-      while (idx < networks.length) {
-        if (byteIndex < byteLength) {
-          value = networks[idx].bytes[byteIndex];
-        } else {
-          value = networks[idx].cidr;
-        }
-        if (runningPrefixSum[value] !== idx) {
-          if (runningPrefixSum[value] < offsetPrefixSum[value]) {
-            let x = networks[runningPrefixSum[value]];
-            networks[runningPrefixSum[value]] = networks[idx];
-            networks[idx] = x;
-          } else {
-            idx++;
-          }
-        } else {
-          idx++;
-        }
-        runningPrefixSum[value]++;
-      }
+  // initialize offsetPrefixSum (american flag sort)
+  for (let i = 0; i < 256; i++) {
+    if (i < 255) {
+      offsetPrefixSum[i] = runningPrefixSum[i + 1];
+    } else {
+      offsetPrefixSum[i] = runningPrefixSum[i] + lastCount;
     }
   }
-  return networks;
+
+  // in place swap and sort by value
+  let redIndex = start;
+  let redValue = 0;
+  while (redIndex < stop) {
+    if (byteIndex === -1) {
+      redValue = networks[redIndex].bytes.length;
+    } else if (byteIndex < 16) {
+      if (byteIndex < networks[redIndex].bytes.length) {
+        redValue = networks[redIndex].bytes[byteIndex];
+      } else {
+        redValue = 0;
+      }
+    } else {
+      redValue = networks[redIndex].cidr;
+    }
+    let blueIndex = start + runningPrefixSum[redValue];
+    if (runningPrefixSum[redValue] < offsetPrefixSum[redValue]) {
+      runningPrefixSum[redValue]++;
+      if (redIndex === blueIndex) {
+        redIndex++;
+      } else {
+        let oldRedNetwork = networks[redIndex];
+        networks[redIndex] = networks[blueIndex];
+        networks[blueIndex] = oldRedNetwork;
+      }
+    } else {
+      redIndex++;
+    }
+  }
+
+  // recurse and sort lower bits
+  if (byteIndex < 16) {
+    let lastPrefixSum = 0;
+    for (var i = 0; i < runningPrefixSum.length; i++) {
+      if (runningPrefixSum[i] !== lastPrefixSum) {
+        radixSortNetworks(networks, start + lastPrefixSum, start + runningPrefixSum[i], byteIndex + 1);
+      }
+      lastPrefixSum = runningPrefixSum[i];
+    }
+  }
 }
 
 export function sortNetworks(networks: Network[]) {
-  const v4 = specificNetworks(networks, IPVersion.v4);
-  const v6 = specificNetworks(networks, IPVersion.v6);
-  radixSortNetworks(v4, IPVersion.v4);
-  radixSortNetworks(v6, IPVersion.v6);
-  return [...v4, ...v6];
+  radixSortNetworks(networks, 0, networks.length, -1);
 }
