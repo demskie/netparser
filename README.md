@@ -178,16 +178,16 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > <a name="api-sort"></a>
 > ### Function [`sort`](#api-sort)
 > <em>Sort returns an array of sorted networks</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L341-L367)  
-> > **sort( )** <sup>&rArr; <code>undefined | null</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L341-L367)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L341-L368)  
+> > **sort( )** <sup>&rArr; <code>null | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L341-L368)  
 > > &emsp;&#x25aa; networkAddresses <sup><code>string[]</code></sup> <em>- An array of addresses or subnets</em>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
 >
 > <a name="api-summarize"></a>
 > ### Function [`summarize`](#api-summarize)
 > <em>Summarize returns an array of aggregates given a list of networks</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L381-L429)  
-> > **summarize( )** <sup>&rArr; <code>null | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L381-L429)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L382-L430)  
+> > **summarize( )** <sup>&rArr; <code>null | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L382-L430)  
 > > &emsp;&#x25aa; networks <sup><code>string[]</code></sup> <em>- An array of addresses or subnets</em>  
 > > &emsp;&#x25ab; strict<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Do not automatically mask addresses to baseAddresses</em>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
