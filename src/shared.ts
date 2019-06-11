@@ -73,10 +73,6 @@ export function duplicateNetwork(network: Network) {
   return { bytes: network.bytes.slice(), cidr: network.cidr } as Network;
 }
 
-export function subarrayAddress(address: Address, begin: number, end?: number) {
-  return address.subarray(begin, end);
-}
-
 export function setAddress(dst: Uint8Array, src: Uint8Array) {
   for (var i = 0; i < src.length; i++) {
     if (i < dst.length) {
