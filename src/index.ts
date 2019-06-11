@@ -65,9 +65,9 @@ export function broadcastAddress(network: string, throwErrors?: boolean) {
  * @returns A boolean or null in case of error
  */
 export function findUnusedSubnets(aggregate: string, subnets: string[], strict?: boolean, throwErrors?: boolean) {
-  if (subnets.length === 0) return aggregate;
   const aggnetwork = shared.parseNetworkString(aggregate, throwErrors, strict);
   if (!aggnetwork) return null;
+  if (subnets.length === 0) return [aggregate];
   const subnetworks = [] as shared.Network[];
   for (var s of subnets) {
     const net = shared.parseNetworkString(s, throwErrors, strict);
@@ -309,7 +309,7 @@ export function rangeOfNetworks(startAddress: string, stopAddress: string, throw
   }
   switch (shared.compareAddresses(startAddr, stopAddr)) {
     case shared.Pos.equals:
-      return [`${startAddress}/${startAddr.length}`];
+      return [`${startAddress}/${startAddr.length * 8}`];
     case shared.Pos.after:
       [startAddr, stopAddr] = [stopAddr, startAddr];
   }
@@ -391,10 +391,6 @@ export function summarize(networks: string[], strict?: boolean, throwErrors?: bo
         net = { bytes: addr, cidr: 32 };
       } else {
         net = { bytes: addr, cidr: 128 };
-      }
-      if (subnets.length > 0 && subnets[0].bytes.length !== net.bytes.length) {
-        if (throwErrors) throw errors.MixingIPv4AndIPv6;
-        return null;
       }
     }
     subnets[i] = net;
