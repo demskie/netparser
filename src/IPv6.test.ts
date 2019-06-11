@@ -38,3 +38,8 @@ test("sanity check convertedEmbeddedIPv4", () => {
   const output = ipv6.convertEmbeddedIPv4("2001:db8:122:344::192.0.2.33");
   expect(output).toEqual("2001:db8:122:344::c00:221");
 });
+
+test("sanity check ipv6.bytesToAddr", () => {
+  const output = ipv6.bytesToAddr(new Uint8Array(3));
+  expect(output).toEqual(null);
+});

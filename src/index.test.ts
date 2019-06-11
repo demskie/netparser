@@ -1,17 +1,32 @@
 import * as index from "./index";
 import * as subnets from "./mockdata/subnets.mock";
 
-test("sanity check baseAddress", () => {
+test("sanity check baseAddress #1", () => {
   const output = index.baseAddress("192.168.200.113/24", true);
   expect(output).toEqual("192.168.200.0");
 });
 
-test("sanity check broadcastAddress", () => {
+test("sanity check baseAddress #2", () => {
+  const output = index.baseAddress("ffff:fc00::1:1234/64", true);
+  expect(output).toEqual("ffff:fc00::");
+});
+
+test("sanity check baseAddress #3", () => {
+  const output = index.baseAddress("foobar");
+  expect(output).toEqual(null);
+});
+
+test("sanity check broadcastAddress #1", () => {
   const output = index.broadcastAddress("192.168.0.0/24", true);
   expect(output).toEqual("192.168.0.255");
 });
 
-test("sanity check unusedSubnets", () => {
+test("sanity check broadcastAddress #2", () => {
+  const output = index.broadcastAddress("foobar");
+  expect(output).toEqual(null);
+});
+
+test("sanity check findUnusedSubnets #1", () => {
   const output = index.findUnusedSubnets("192.168.0.0/22", ["192.168.1.0/24", "192.168.2.32/30"], true, true);
   expect(output).toEqual([
     "192.168.0.0/24",
@@ -25,11 +40,29 @@ test("sanity check unusedSubnets", () => {
   ]);
 });
 
-test("sanity check ip parsing", () => {
-  let output = index.ip("255.255.255.255", true);
+test("sanity check findUnusedSubnets #2", () => {
+  const output = index.findUnusedSubnets("192.168.0.0/22", []);
+  expect(output).toEqual(["192.168.0.0/22"]);
+});
+
+test("sanity check findUnusedSubnets #3", () => {
+  const output = index.findUnusedSubnets("foobar", ["foo", "bar"]);
+  expect(output).toEqual(null);
+});
+
+test("sanity check ip parsing #1", () => {
+  const output = index.ip("255.255.255.255", true);
   expect(output).toEqual("255.255.255.255");
-  output = index.ip("ffff:fc00::1:1234", true);
+});
+
+test("sanity check ip parsing #2", () => {
+  const output = index.ip("ffff:fc00::1:1234", true);
   expect(output).toEqual("ffff:fc00::1:1234");
+});
+
+test("sanity check ip parsing #3", () => {
+  const output = index.ip("foobar");
+  expect(output).toEqual(null);
 });
 
 test("sanity check network parsing", () => {
@@ -41,37 +74,102 @@ test("sanity check network parsing", () => {
   }
 });
 
-test("sanity check networkComesBefore", () => {
+test("sanity check networkComesBefore #1", () => {
   const output = index.networkComesBefore("192.168.0.0/24", "192.168.1.0/24", true, true);
   expect(output).toEqual(true);
 });
 
-test("sanity check networkContainsAddress", () => {
+test("sanity check networkComesBefore #2", () => {
+  const output = index.networkComesBefore("192.168.1.0/24", "192.168.0.0/24", true, true);
+  expect(output).toEqual(false);
+});
+
+test("sanity check networkComesBefore #3", () => {
+  const output = index.networkComesBefore("192.168.0.0/23", "192.168.0.0/24", true, true);
+  expect(output).toEqual(true);
+});
+
+test("sanity check networkComesBefore #4", () => {
+  const output = index.networkComesBefore("192.168.0.0/24", "192.168.0.0/23", true, true);
+  expect(output).toEqual(false);
+});
+
+test("sanity check networkComesBefore #5", () => {
+  const output = index.networkComesBefore("foobar", "192.168.0.0/23");
+  expect(output).toEqual(null);
+});
+
+test("sanity check networkComesBefore #6", () => {
+  const output = index.networkComesBefore("192.168.0.0/24", "foobar");
+  expect(output).toEqual(null);
+});
+
+test("sanity check networkContainsAddress #1", () => {
   const output = index.networkContainsAddress("192.168.0.0/24", "192.168.0.100", true, true);
   expect(output).toEqual(true);
 });
 
-test("sanity check networkContainsSubnet", () => {
+test("sanity check networkContainsAddress #2", () => {
+  const output = index.networkContainsAddress("foobar", "192.168.0.100");
+  expect(output).toEqual(null);
+});
+
+test("sanity check networkContainsAddress #3", () => {
+  const output = index.networkContainsAddress("192.168.0.0/24", "foobar");
+  expect(output).toEqual(null);
+});
+
+test("sanity check networkContainsSubnet #1", () => {
   const output = index.networkContainsSubnet("192.168.0.0/16", "192.168.0.0/24", true, true);
   expect(output).toEqual(true);
 });
 
-test("sanity check networksIntersect", () => {
+test("sanity check networkContainsSubnet #2", () => {
+  const output = index.networkContainsSubnet("foobar", "192.168.0.0/24");
+  expect(output).toEqual(null);
+});
+
+test("sanity check networkContainsSubnet #3", () => {
+  const output = index.networkContainsSubnet("192.168.0.0/16", "foobar");
+  expect(output).toEqual(null);
+});
+
+test("sanity check networksIntersect #1", () => {
   const output = index.networksIntersect("192.168.0.0/24", "192.168.1.0/24", true, true);
   expect(output).toEqual(false);
 });
 
-test("sanity check nextAddress", () => {
+test("sanity check networksIntersect #2", () => {
+  const output = index.networksIntersect("foobar", "192.168.1.0/24");
+  expect(output).toEqual(null);
+});
+
+test("sanity check networksIntersect #3", () => {
+  const output = index.networksIntersect("192.168.0.0/24", "foobar");
+  expect(output).toEqual(null);
+});
+
+test("sanity check nextAddress #1", () => {
   const output = index.nextAddress("192.168.0.0", true);
   expect(output).toEqual("192.168.0.1");
 });
 
-test("sanity check nextNetwork", () => {
+test("sanity check nextAddress #2", () => {
+  const output = index.nextAddress("foobar");
+  expect(output).toEqual(null);
+});
+
+test("sanity check nextNetwork #1", () => {
   const output = index.nextNetwork("192.168.0.0/24", true, true);
   expect(output).toEqual("192.168.1.0/24");
 });
 
-test("sanity check rangeOfNetworks IPv4", () => {
+test("sanity check nextNetwork #2", () => {
+  const output = index.nextNetwork("foobar");
+  expect(output).toEqual(null);
+});
+
+test("sanity check rangeOfNetworks #1", () => {
   const output = index.rangeOfNetworks("192.168.1.2", "192.168.2.2", true);
   expect(output).toEqual([
     "192.168.1.2/31",
@@ -86,7 +184,7 @@ test("sanity check rangeOfNetworks IPv4", () => {
   ]);
 });
 
-test("sanity check rangeOfNetworks IPv6", () => {
+test("sanity check rangeOfNetworks #2", () => {
   const output = index.rangeOfNetworks("2001:400::", "2001:440:ffff:ffff:7fff:ffff:ffff:ffff", true);
   expect(output).toEqual([
     "2001:400::/26",
@@ -126,7 +224,32 @@ test("sanity check rangeOfNetworks IPv6", () => {
   ]);
 });
 
-test("sanity check sort", () => {
+test("sanity check rangeOfNetworks #3", () => {
+  const output = index.rangeOfNetworks("192.168.1.2", "2001:400::");
+  expect(output).toEqual(null);
+});
+
+test("sanity check rangeOfNetworks #4", () => {
+  const output = index.rangeOfNetworks("192.168.1.2", "192.168.1.2");
+  expect(output).toEqual(["192.168.1.2/32"]);
+});
+
+test("sanity check rangeOfNetworks #5", () => {
+  const output = index.rangeOfNetworks("192.168.1.6", "192.168.1.2");
+  expect(output).toEqual(["192.168.1.2/31", "192.168.1.4/31", "192.168.1.6/32"]);
+});
+
+test("sanity check rangeOfNetworks #6", () => {
+  const output = index.rangeOfNetworks("foobar", "192.168.1.2");
+  expect(output).toEqual(null);
+});
+
+test("sanity check rangeOfNetworks #7", () => {
+  const output = index.rangeOfNetworks("192.168.1.6", "foobar");
+  expect(output).toEqual(null);
+});
+
+test("sanity check sort #1", () => {
   const input = ["3.0.0.0", "6.0.0.0", "2.0.0.0", "7.0.0.0", "7.0.0.0", "4.0.0.0", "0.0.0.0", "6.0.0.0", "0.0.0.0"];
   const output = index.sort(input, true);
   expect(output).toEqual([
@@ -142,7 +265,7 @@ test("sanity check sort", () => {
   ]);
 });
 
-test("sanity check sort", () => {
+test("sanity check sort #2", () => {
   const input = [
     "18.208.0.0/13",
     "52.95.245.0/24",
@@ -190,7 +313,52 @@ test("sanity check sort", () => {
   ]);
 });
 
-test("sanity check summarize", () => {
+test("sanity check sort #3", () => {
+  const input = [
+    "3.0.0.0",
+    "6.0.0.0",
+    "::1",
+    "2.0.0.0",
+    "7.0.0.0",
+    "7.0.0.0",
+    "4.0.0.0",
+    "0.0.0.0",
+    "6.0.0.0",
+    "0.0.0.0",
+    "::80"
+  ];
+  const output = index.sort(input, true);
+  expect(output).toEqual([
+    "0.0.0.0",
+    "0.0.0.0",
+    "2.0.0.0",
+    "3.0.0.0",
+    "4.0.0.0",
+    "6.0.0.0",
+    "6.0.0.0",
+    "7.0.0.0",
+    "7.0.0.0",
+    "::1",
+    "::80"
+  ]);
+});
+
+test("sanity check summarize #1", () => {
   const output = index.summarize(["192.168.0.0/16", "192.168.1.1", "192.168.2.3/31"], true);
   expect(output).toEqual(["192.168.0.0/16"]);
+});
+
+test("sanity check summarize #2", () => {
+  const output = index.summarize(["192.168.0.0/16", "::1", "192.168.1.1", "192.168.2.3/31"], true);
+  expect(output).toEqual(["192.168.0.0/16", "::1/128"]);
+});
+
+test("sanity check summarize #3", () => {
+  const output = index.summarize(["192.168.0.0", "192.168.0.2/31", "192.168.0.3", "192.168.0.4/31"], true);
+  expect(output).toEqual(["192.168.0.0/32", "192.168.0.2/30"]);
+});
+
+test("sanity check summarize #4", () => {
+  const output = index.summarize(["192.168.0.0/31", "192.168.0.2/31", "192.168.0.3", "192.168.0.5/32"], true);
+  expect(output).toEqual(["192.168.0.0/30", "192.168.0.5/32"]);
 });
