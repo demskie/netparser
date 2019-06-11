@@ -86,7 +86,7 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > ### Function [`findUnusedSubnets`](#api-findUnusedSubnets)
 > <em>FindUnusedSubnets returns array of unused subnets given the aggregate and sibling subnets</em>  
 > Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L67-L100)  
-> > **findUnusedSubnets( )** <sup>&rArr; <code>null | string | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L67-L100)  
+> > **findUnusedSubnets( )** <sup>&rArr; <code>null | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L67-L100)  
 > > &emsp;&#x25aa; aggregate <sup><code>string</code></sup> <em>- An aggregate network like 192.168.0.0/24</em>  
 > > &emsp;&#x25aa; subnets <sup><code>string[]</code></sup> <em>- Array of subnetworks like ["192.168.0.0/24", "192.168.0.128/26"]</em>  
 > > &emsp;&#x25ab; strict<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Do not automatically mask addresses to baseAddresses</em>  
@@ -186,8 +186,8 @@ Docs generated using [`docts`](https://github.com/charto/docts)
 > <a name="api-summarize"></a>
 > ### Function [`summarize`](#api-summarize)
 > <em>Summarize returns an array of aggregates given a list of networks</em>  
-> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L382-L430)  
-> > **summarize( )** <sup>&rArr; <code>null | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L382-L430)  
+> Source code: [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L382-L426)  
+> > **summarize( )** <sup>&rArr; <code>null | string[]</code></sup> [`<>`](http://github.com/demskie/netparser/blob/master/src/index.ts#L382-L426)  
 > > &emsp;&#x25aa; networks <sup><code>string[]</code></sup> <em>- An array of addresses or subnets</em>  
 > > &emsp;&#x25ab; strict<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Do not automatically mask addresses to baseAddresses</em>  
 > > &emsp;&#x25ab; throwErrors<sub>?</sub> <sup><code>undefined | true | false</code></sup> <em>- Stop the library from failing silently</em>  
