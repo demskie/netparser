@@ -118,3 +118,11 @@ export function bytesToAddr(bytes: Uint8Array, throwErrors?: boolean) {
   if (throwErrors) throw errors.GenericBytesToAddr;
   return null;
 }
+
+export function random() {
+  const hextets = new Array(8);
+  for (var i = 0; i < hextets.length; i++) {
+    hextets[i] = Number(Math.floor(Math.random() * 65535)).toString(16);
+  }
+  return hextets.join(":");
+}

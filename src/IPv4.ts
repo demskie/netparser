@@ -25,3 +25,11 @@ export function bytesToAddr(bytes: Uint8Array, throwErrors?: boolean) {
   if (throwErrors) throw errors.BytesNotFourElements;
   return null;
 }
+
+export function random() {
+  const a = Math.floor(Math.random() * 255);
+  const b = Math.floor(Math.random() * 255);
+  const c = Math.floor(Math.random() * 255);
+  const d = Math.floor(Math.random() * 255);
+  return `${a}.${b}.${c}.${d}`;
+}

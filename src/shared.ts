@@ -318,5 +318,31 @@ export function findNetworkWithoutIntersection(network: Network, otherNetworks: 
 }
 
 export function sortNetworks(networks: Network[]) {
-  sort.radixSortNetworks(networks, 0, networks.length, -1);
+  if (networks && networks.length > 1) {
+    sort.radixSortNetworks(networks, 0, networks.length, -1);
+  }
+}
+
+export function summarizeSortedNetworks(sorted: Network[]) {
+  const summarized = [] as Network[];
+  for (let idx = 0; idx < sorted.length; idx++) {
+    summarized.push(sorted[idx]);
+    let skipped = 0;
+    for (let i = idx + 1; i < sorted.length; i++) {
+      if (networkContainsSubnet(sorted[idx], sorted[i])) {
+        skipped++;
+        continue;
+      }
+      if (sorted[idx].cidr === sorted[i].cidr) {
+        if (networksAreAdjacent(sorted[idx], sorted[i])) {
+          sorted[idx].cidr--;
+          skipped++;
+          continue;
+        }
+      }
+      break;
+    }
+    idx += skipped;
+  }
+  return summarized;
 }

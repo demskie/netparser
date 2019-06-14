@@ -84,15 +84,15 @@ export function radixSortNetworks(networks: shared.Network[], start: number, sto
   }
 }
 
-export function binarySearchForIndex(network: shared.Network, sortedNetworks: shared.Network[]) {
+export function binarySearchForInsertionIndex(network: shared.Network, sortedNetworks: shared.Network[]) {
   let left = 0;
   let right = sortedNetworks.length - 1;
   while (left < right) {
-    let middle = left + Math.floor((right - left) / 2);
+    let middle = Math.floor((left + right) / 2);
     let netCmp = shared.compareNetworks(sortedNetworks[middle], network);
     switch (netCmp) {
       case shared.Pos.equals:
-        return -1;
+        return middle;
       case shared.Pos.before:
         left = middle + 1;
         break;
@@ -101,5 +101,7 @@ export function binarySearchForIndex(network: shared.Network, sortedNetworks: sh
         break;
     }
   }
+  let netCmp = shared.compareNetworks(sortedNetworks[left], network);
+  if (netCmp === shared.Pos.before) return left + 1;
   return left;
 }

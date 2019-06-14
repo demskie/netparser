@@ -43,3 +43,8 @@ test("sanity check ipv6.bytesToAddr", () => {
   const output = ipv6.bytesToAddr(new Uint8Array(3));
   expect(output).toEqual(null);
 });
+
+test("sanity check ipv6.random", () => {
+  const output = ipv6.random();
+  expect(output.split(":").length).toEqual(8);
+});

@@ -141,3 +141,8 @@ test("bytesToAddr returns null", () => {
   const output = ipv4.bytesToAddr(new Uint8Array(3), false);
   expect(output).toEqual(null);
 });
+
+test("random returns address", () => {
+  const output = ipv4.random();
+  expect(output.split(".").length).toEqual(4);
+});
