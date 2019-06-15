@@ -1,4 +1,6 @@
 import * as errors from "./errors";
+import * as shared from "./shared";
+import * as weight from "./weight";
 
 export function addrToBytes(addr: string, throwErrors?: boolean) {
   const ip = addr.split(".");
@@ -26,10 +28,15 @@ export function bytesToAddr(bytes: Uint8Array, throwErrors?: boolean) {
   return null;
 }
 
-export function random() {
-  const a = Math.floor(Math.random() * 255);
-  const b = Math.floor(Math.random() * 255);
-  const c = Math.floor(Math.random() * 255);
-  const d = Math.floor(Math.random() * 255);
-  return `${a}.${b}.${c}.${d}`;
+export function randomAddress() {
+  return bytesToAddr(Uint8Array.from(Array(4), () => Math.random() * 255));
+}
+
+const choices = Array.from(Array(31), (_, idx) => new weight.WeightedValue(Math.pow(2, idx), idx + 1));
+
+export function randomNetwork() {
+  const bytes = Uint8Array.from(Array(4), () => Math.random() * 255);
+  const cidr = weight.getValue(choices) as number;
+  shared.applySubnetMask(bytes, cidr);
+  return `${bytesToAddr(bytes)}/${cidr}`;
 }

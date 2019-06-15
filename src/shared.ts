@@ -157,7 +157,7 @@ export function applySubnetMask(bytes: Uint8Array, cidr: number) {
   for (var i = bytes.length - 1; i >= 0; i--) {
     switch (Math.max(0, Math.min(8, maskBits))) {
       case 0:
-        return bytes;
+        return;
       case 1:
         bytes[i] &= ~1;
         break;
@@ -185,7 +185,6 @@ export function applySubnetMask(bytes: Uint8Array, cidr: number) {
     }
     maskBits -= 8;
   }
-  return bytes;
 }
 
 export function parseAddressString(s: string, throwErrors?: boolean) {

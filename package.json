@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc && docts && jest --coverage",
     "test": "tsc --noEmit && jest --coverage",
-    "bench": "ts-node --transpile-only **/*.bench.ts"
+    "bench": "ts-node -T **/*/index.bench.ts && ts-node -T **/*/match.bench.ts"
   },
   "repository": {
     "type": "git",
@@ -40,7 +40,7 @@
       "^.+\\.(ts|tsx)$": "ts-jest"
     },
     "testRegex": [
-      ".*test\\.ts"
+      ".*.test\\.ts"
     ],
     "moduleFileExtensions": [
       "ts",
@@ -57,20 +57,23 @@
     "testPathIgnorePatterns": [
       "<rootDir>/node_modules/",
       "<rootDir>/config/",
-      "<rootDir>/build/"
+      "<rootDir>/build/",
+      "<rootDir>/src/mockdata/",
+      "<rootDir>/src/benchmarks/"
     ],
     "collectCoverage": false,
     "collectCoverageFrom": [
-      "**/*.ts",
       "!**/*.bench.ts",
       "!**/*.mock.ts",
       "!**/node_modules/**",
-      "!**/vendor/**"
+      "!**/vendor/**",
+      "**/*.ts"
     ]
   },
   "devDependencies": {
     "@types/benchmark": "^1.0.31",
     "@types/jest": "^24.0.11",
+    "@types/netmask": "^1.0.30",
     "@types/node": "^12.0.8",
     "@typescript-eslint/eslint-plugin": "^1.6.0",
     "@typescript-eslint/parser": "^1.6.0",
@@ -81,7 +84,9 @@
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.1.0",
     "eslint-plugin-prettier": "^3.0.1",
+    "ipaddr.js": "^1.9.0",
     "jest": "^24.7.1",
+    "netmask": "^1.0.6",
     "prettier": "^1.16.4",
     "ts-jest": "^24.0.2",
     "ts-node": "^8.2.0",

@@ -1,5 +1,6 @@
 import * as shared from "./shared";
 import * as errors from "./errors";
+import * as weight from "./weight";
 
 function padZeros(addr: string, throwErrors?: boolean) {
   if (addr.length >= 2) {
@@ -119,10 +120,15 @@ export function bytesToAddr(bytes: Uint8Array, throwErrors?: boolean) {
   return null;
 }
 
-export function random() {
-  const hextets = new Array(8);
-  for (var i = 0; i < hextets.length; i++) {
-    hextets[i] = Number(Math.floor(Math.random() * 65535)).toString(16);
-  }
-  return hextets.join(":");
+export function randomAddress() {
+  return bytesToAddr(Uint8Array.from(Array(16), () => Math.random() * 255));
+}
+
+const choices = Array.from(Array(127), (_, idx) => new weight.WeightedValue(Math.pow(2, idx), idx + 1));
+
+export function randomNetwork() {
+  const bytes = Uint8Array.from(Array(16), () => Math.random() * 255);
+  const cidr = weight.getValue(choices) as number;
+  shared.applySubnetMask(bytes, cidr);
+  return `${bytesToAddr(bytes)}/${cidr}`;
 }
