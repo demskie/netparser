@@ -1,5 +1,6 @@
-import * as shared from "./shared";
-import * as ipv6 from "./IPv6";
+import * as index from "../index";
+import * as shared from "../shared";
+import * as ipv6 from "../IPv6";
 
 test("sanity check IPv6 offset by /128", () => {
   const input = "2001:db8:122:344::";
@@ -44,7 +45,12 @@ test("sanity check ipv6.bytesToAddr", () => {
   expect(output).toEqual(null);
 });
 
-test("sanity check ipv6.random", () => {
-  const output = ipv6.random();
-  expect(output.split(":").length).toEqual(8);
+test("sanity check ipv6.randomAddress", () => {
+  const output = ipv6.randomAddress();
+  expect(index.ip(output)).toBeTruthy();
+});
+
+test("sanity check ipv6.randomNetwork", () => {
+  const output = ipv6.randomNetwork();
+  expect(index.network(output)).toBeTruthy();
 });

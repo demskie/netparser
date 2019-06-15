@@ -1,4 +1,4 @@
-import * as index from "./index";
+import * as index from "../index";
 
 test("sanity check baseAddress #1", () => {
   const output = index.baseAddress("192.168.200.113/24", true);
@@ -65,11 +65,11 @@ test("sanity check ip parsing #3", () => {
 });
 
 test("sanity check network parsing", () => {
-  const validSubnets = require("./mockdata/subnets.mock").valid as string[];
+  const validSubnets = require("../mockdata/subnets.mock").valid as string[];
   for (var input of validSubnets) {
     index.network(input, true);
   }
-  const invalidSubnets = require("./mockdata/subnets.mock").invalid as string[];
+  const invalidSubnets = require("../mockdata/subnets.mock").invalid as string[];
   for (var input of invalidSubnets) {
     expect(index.network(input, false)).toEqual(null);
   }

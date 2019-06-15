@@ -1,4 +1,4 @@
-import * as shared from "./shared";
+import * as shared from "../shared";
 
 test("sanity check setAddress #1", () => {
   shared.setAddress(new Uint8Array(4), new Uint8Array(16));

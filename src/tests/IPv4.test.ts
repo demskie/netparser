@@ -1,6 +1,7 @@
-import * as shared from "./shared";
-import * as ipv4 from "./IPv4";
-import * as errors from "./errors";
+import * as index from "../index";
+import * as shared from "../shared";
+import * as ipv4 from "../IPv4";
+import * as errors from "../errors";
 
 test("sanity check IPv4 offset by /32", () => {
   const input = "192.168.0.0";
@@ -142,7 +143,12 @@ test("bytesToAddr returns null", () => {
   expect(output).toEqual(null);
 });
 
-test("random returns address", () => {
-  const output = ipv4.random();
-  expect(output.split(".").length).toEqual(4);
+test("sanity check ipv4.randomAddress", () => {
+  const output = ipv4.randomAddress();
+  expect(index.ip(output)).toBeTruthy();
+});
+
+test("sanity check ipv4.randomNetwork", () => {
+  const output = ipv4.randomNetwork();
+  expect(index.network(output)).toBeTruthy();
 });

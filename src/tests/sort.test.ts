@@ -1,5 +1,5 @@
-import * as shared from "./shared";
-import * as sort from "./sort";
+import * as shared from "../shared";
+import * as sort from "../sort";
 
 test("sanity check binarySearchForInsertionIndex #1", () => {
   const inputNetwork = shared.parseNetworkString("192.168.0.122/32");

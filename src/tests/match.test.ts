@@ -1,4 +1,4 @@
-import * as match from "./match";
+import * as match from "../match";
 
 test("sanity check Matcher #1", () => {
   const input = [
