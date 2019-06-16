@@ -24,12 +24,8 @@ export class Matcher {
     if (!s) return false;
     const idx = sort.binarySearchForInsertionIndex(net, this.sorted);
     if (idx < 0) return false;
-    if (idx < this.sorted.length) {
-      if (shared.networkContainsSubnet(this.sorted[idx], net)) return true;
-    }
-    if (idx - 1 >= 0) {
-      if (shared.networkContainsSubnet(this.sorted[idx - 1], net)) return true;
-    }
+    if (idx < this.sorted.length && shared.networkContainsSubnet(this.sorted[idx], net)) return true;
+    if (idx - 1 >= 0 && shared.networkContainsSubnet(this.sorted[idx - 1], net)) return true;
     return false;
   }
 }
