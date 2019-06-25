@@ -28,10 +28,9 @@ export function summarizeSortedNetworks(sorted: Network[]) {
         skipped++;
         continue;
       }
-      if (sorted[idx].getCIDR() === sorted[i].getCIDR()) {
+      if (sorted[idx].cidr() === sorted[i].cidr()) {
         if (sorted[idx].adjacent(sorted[i])) {
-          var cidr = sorted[idx].getCIDR() - 1;
-          sorted[idx].setCIDR(cidr);
+          sorted[idx].setCIDR(sorted[idx].cidr() - 1);
         }
       }
       break;
