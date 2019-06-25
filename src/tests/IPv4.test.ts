@@ -1,6 +1,6 @@
 import * as index from "../index";
 import * as shared from "../shared";
-import * as ipv4 from "../IPv4";
+import * as ipv4 from "../ipv4";
 import * as errors from "../errors";
 
 test("sanity check IPv4 offset by /32", () => {

@@ -1,4 +1,5 @@
 import * as index from "../index";
+import * as bravo from "../parse";
 
 test("sanity check baseAddress #1", () => {
   const output = index.baseAddress("192.168.200.113/24", true);

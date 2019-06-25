@@ -1,6 +1,6 @@
-import * as shared from "./shared";
+import { Network } from "./network";
 
-export function radixSortNetworks(networks: shared.Network[], start: number, stop: number, byteIndex: number) {
+export function radixSortNetworks(networks: Network[], start: number, stop: number, byteIndex: number) {
   const runningPrefixSum = new Array(256) as number[];
   const offsetPrefixSum = new Array(256) as number[];
   const counts = runningPrefixSum;
@@ -10,17 +10,22 @@ export function radixSortNetworks(networks: shared.Network[], start: number, sto
 
   // count each occurance of byte value
   for (let i = start; i < stop; i++) {
-    if (byteIndex === -1) {
-      counts[networks[i].bytes.length]++;
-    } else if (byteIndex < 16) {
-      if (byteIndex < networks[i].bytes.length) {
-        networks[i].bytes[byteIndex] = Math.min(Math.max(0, networks[i].bytes[byteIndex]), 255);
-      }
-      counts[networks[i].bytes[byteIndex]]++;
-    } else {
-      networks[i].cidr = Math.min(Math.max(0, networks[i].cidr), 8 * networks[i].bytes.length);
-      counts[networks[i].cidr]++;
+    let byteValue: number;
+    switch (byteIndex) {
+      case -1:
+        byteValue = networks[i].size();
+        break;
+      case 16:
+        byteValue = networks[i].cidr();
+        break;
+      default:
+        if (byteIndex < networks[i].size()) {
+          byteValue = networks[i].addr().getByte(byteIndex);
+        } else {
+          byteValue = 0;
+        }
     }
+    counts[byteValue]++;
   }
   let lastCount = counts[counts.length - 1];
 
@@ -46,16 +51,19 @@ export function radixSortNetworks(networks: shared.Network[], start: number, sto
   let redIndex = start;
   let redValue = 0;
   while (redIndex < stop) {
-    if (byteIndex === -1) {
-      redValue = networks[redIndex].bytes.length;
-    } else if (byteIndex < 16) {
-      if (byteIndex < networks[redIndex].bytes.length) {
-        redValue = networks[redIndex].bytes[byteIndex];
-      } else {
-        redValue = 0;
-      }
-    } else {
-      redValue = networks[redIndex].cidr;
+    switch (byteIndex) {
+      case -1:
+        redValue = networks[redIndex].size();
+        break;
+      case 16:
+        redValue = networks[redIndex].cidr();
+        break;
+      default:
+        if (byteIndex < networks[redIndex].size()) {
+          redValue = networks[redIndex].addr().getByte(byteIndex);
+        } else {
+          redValue = 0;
+        }
     }
     let blueIndex = start + runningPrefixSum[redValue];
     if (runningPrefixSum[redValue] < offsetPrefixSum[redValue]) {
@@ -84,7 +92,7 @@ export function radixSortNetworks(networks: shared.Network[], start: number, sto
   }
 }
 
-export function binarySearchForInsertionIndex(network: shared.Network, sortedNetworks: shared.Network[]) {
+export function binarySearchForInsertionIndex(network: Network, sortedNetworks: Network[]) {
   let left = 0;
   let right = sortedNetworks.length - 1;
   while (left < right) {

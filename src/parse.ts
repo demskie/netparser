@@ -1,5 +1,88 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
+import * as shared from "./shared";
+import * as errors from "./errors";
+
+export function network(s: string, throwErrors?: boolean) {
+  s = s.trim();
+  var parts = s.split("/");
+  if (parts.length === 0 || parts.length > 2) return null;
+  var isIPv4 = looksLikeIPv4(s);
+  if (isIPv4 === null) {
+    if (throwErrors) throw errors.GenericNetworkParse;
+    return null;
+  }
+  var cidr = isIPv4 ? 32 : 128;
+  if (parts.length === 2) {
+    var x = parseIntRange(parts[1], 0, cidr);
+    if (x === null) {
+      if (throwErrors) throw errors.GenericNetworkParse;
+      return null;
+    }
+    cidr = x;
+  }
+  var bytes = isIPv4 ? v4AddrToBytes(parts[0]) : v6AddrToBytes(parts[0]);
+  if (bytes === null) {
+    if (throwErrors) throw errors.GenericNetworkParse;
+    return null;
+  }
+  return { bytes, cidr } as shared.Network;
+}
+
+function looksLikeIPv4(s: string) {
+  for (var c of s) {
+    if (c === ".") return true;
+    if (c === ":") return false;
+  }
+  return null;
+}
+
+function parseIntRange(old: string, min: number, max: number) {
+  var s = "";
+  for (var i = 0; i < old.length; i++) {
+    if (!isOneDigit(old[i])) break;
+    s += old[i];
+  }
+  var x = parseInt(s, 10);
+  if (x >= min && x <= max) return x;
+  return null;
+}
+
+function isOneDigit(s: string) {
+  switch (s) {
+    case "0":
+    case "1":
+    case "2":
+    case "3":
+    case "4":
+    case "5":
+    case "6":
+    case "7":
+    case "8":
+    case "9":
+      return true;
+    default:
+      return false;
+  }
+}
+
+function v4AddrToBytes(old: string) {
+  var bytes = new Uint8Array(4);
+  var parts = old.split(".");
+  if (parts.length === 4) {
+    for (var i = 0; i < parts.length; i++) {
+      var x = parseInt(parts[i], 10);
+      if (x >= 0 && x <= 255) {
+        bytes[i] = x;
+      } else {
+        return null;
+      }
+    }
+    return bytes;
+  }
+  return null;
+}
+
 /* 
   https://tools.ietf.org/html/rfc3986
     ffff:fc00::1:1234/64
@@ -14,55 +97,67 @@
     2001:db8::1#80
 */
 
-function parse(s: string) {
-  s = s.trim().toLowerCase();
-  const parts = s.split("/");
-  if (parts.length > 2) return null;
-  if (s.search(":") >= 0) {
-    let cidr = 128;
-    if (parts.length === 2) {
-      cidr = parseInt(parts[1], 10);
-      if (Number.isNaN(cidr) || cidr < 0 || cidr > 128) return null;
-    }
-    s = cleanIPv6(s);
+function v6AddrToBytes(old: string) {
+  const bytes = new Uint8Array(16);
+  if (old.length === 0) return null;
+  if (old[0] === "[") {
+    old = removeBrackets(old);
   }
-  // let cidr = 32;
-  // TODO: finish
+  if (old === "::") return bytes;
+  var halves = old.split("::");
+  if (halves.length === 0 || halves.length > 2) return null;
+  var leftByteIndex = 0;
+  var leftParts = halves[0].split(":");
+  for (var i = 0; i < leftParts.length; i++) {
+    if (leftByteIndex >= 16) return bytes;
+    var x = parseInt(leftParts[i], 16);
+    if (Number.isNaN(x)) {
+      var ipv4Parts = leftParts[i].split(".");
+      if (ipv4Parts.length !== 4) return null;
+      for (var j = 0; j < ipv4Parts.length; j++) {
+        x = parseInt(ipv4Parts[j], 10);
+        if (Number.isNaN(x) || x < 0 || x > 255) return null;
+        bytes[leftByteIndex++] = x;
+      }
+      continue;
+    }
+    if (x < 0 || x > 65535) return null;
+    bytes[leftByteIndex++] = Math.floor(x / 256);
+    bytes[leftByteIndex++] = Math.floor(x % 256);
+  }
+  if (halves.length === 2) {
+    return parseRightHalf(bytes, leftByteIndex, halves[1].split(":"));
+  }
+  return bytes;
 }
 
-function cleanIPv6(old: string) {
-  let s = "";
-  let periodCount = 0;
-  for (let i = 0; i < old.length; i++) {
-    if (i === 0 && old[0] === "[") continue;
-    switch (old[i]) {
-      case ".":
-        if (periodCount > 2) return "";
-        s += ".";
-        periodCount++;
-        break;
-      case "0":
-      case "1":
-      case "2":
-      case "3":
-      case "4":
-      case "5":
-      case "6":
-      case "7":
-      case "8":
-      case "9":
-      case "a":
-      case "b":
-      case "c":
-      case "d":
-      case "e":
-      case "f":
-        s += old[i];
-        break;
-      default:
-        return s;
+function removeBrackets(s: string) {
+  for (var i = s.length - 1; i >= 0; i--) {
+    if (s[i] === "]") {
+      return s.substring(1, i);
     }
   }
-  if (periodCount !== 0 && periodCount !== 3) return "";
-  return s;
+  return s.substring(1);
+}
+
+function parseRightHalf(bytes: Uint8Array, leftByteIndex: number, rightParts: string[]) {
+  var rightByteIndex = 15;
+  for (var i = rightParts.length - 1; i >= 0; i--) {
+    if (leftByteIndex > rightByteIndex) return null;
+    var x = parseInt(rightParts[i], 16);
+    if (Number.isNaN(x)) {
+      var ipv4Parts = rightParts[i].split(".");
+      if (ipv4Parts.length !== 4) return null;
+      for (var j = ipv4Parts.length - 1; j >= 0; j--) {
+        x = parseInt(ipv4Parts[j], 10);
+        if (Number.isNaN(x) || x < 0 || x > 255) return null;
+        bytes[rightByteIndex--] = x;
+      }
+      continue;
+    }
+    if (x < 0 || x > 65535) return null;
+    bytes[rightByteIndex--] = Math.floor(x / 256);
+    bytes[rightByteIndex--] = Math.floor(x % 256);
+  }
+  return bytes;
 }

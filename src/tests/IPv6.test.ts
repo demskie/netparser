@@ -1,6 +1,6 @@
 import * as index from "../index";
 import * as shared from "../shared";
-import * as ipv6 from "../IPv6";
+import * as ipv6 from "../ipv6";
 
 test("sanity check IPv6 offset by /128", () => {
   const input = "2001:db8:122:344::";

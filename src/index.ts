@@ -1,4 +1,5 @@
 import * as shared from "./shared";
+import * as parse from "./parse";
 import * as errors from "./errors";
 
 /**
@@ -13,20 +14,10 @@ import * as errors from "./errors";
  * @returns The first address in a subnet or null in case of error
  */
 export function baseAddress(networkAddress: string, throwErrors?: boolean) {
-  networkAddress = networkAddress.trim();
-  if (shared.hasColon(networkAddress)) {
-    networkAddress = shared.removeBrackets(networkAddress);
-  }
-  const ip = shared.removeCIDR(networkAddress, throwErrors);
-  const cidr = shared.getCIDR(networkAddress, throwErrors);
-  if (ip !== null && cidr !== null) {
-    const bytes = shared.addrToBytes(ip, throwErrors);
-    if (bytes !== null) {
-      shared.applySubnetMask(bytes, cidr);
-      return shared.bytesToAddr(bytes, throwErrors);
-    }
-  }
-  return null;
+  const net = parse.network(networkAddress, throwErrors);
+  if (!net) return null;
+  shared.applySubnetMask(net.bytes, net.cidr);
+  return shared.bytesToAddr(net.bytes, throwErrors);
 }
 
 /**
@@ -42,13 +33,16 @@ export function baseAddress(networkAddress: string, throwErrors?: boolean) {
  * @returns An IPv4 address or null in case of error
  */
 export function broadcastAddress(network: string, throwErrors?: boolean) {
-  const net = shared.parseNetworkString(network, false, throwErrors);
-  if (!net) return null;
-  if (!shared.increaseAddressWithCIDR(net.bytes, net.cidr, throwErrors)) return null;
-  if (!shared.decreaseAddressWithCIDR(net.bytes, net.bytes.length * 8, throwErrors)) return null;
-  const addr = shared.bytesToAddr(net.bytes, throwErrors);
-  if (!addr) return null;
-  return `${addr}`;
+  const net = parse.network(network);
+  if (net) {
+    if (!shared.increaseAddressWithCIDR(net.bytes, net.cidr, throwErrors)) return null;
+    if (!shared.decreaseAddressWithCIDR(net.bytes, net.bytes.length * 8, throwErrors)) return null;
+    const addr = shared.bytesToAddr(net.bytes, throwErrors);
+    if (!addr) return null;
+    return `${addr}`;
+  }
+  if (throwErrors) throw errors.GenericAddrToBytes;
+  return null;
 }
 
 /**
