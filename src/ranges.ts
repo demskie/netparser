@@ -1,138 +1,111 @@
-import * as v4 from "./ipv4";
-import * as v6 from "./ipv6";
+import { Network } from "./network";
 
-export const ipv4SpecialRanges = [
+export const specialIPv4 = [
   {
     name: "unspecified", //
-    bytes: v4.addrToBytes("0.0.0.0"),
-    cidr: 8
+    network: new Network("0.0.0.0/8")
   },
   {
     name: "broadcast", //
-    bytes: v4.addrToBytes("255.255.255.255"),
-    cidr: 32
+    network: new Network("255.255.255.255/32")
   },
   {
     name: "multicast", // RFC3171
-    bytes: v4.addrToBytes("224.0.0.0"),
-    cidr: 4
+    network: new Network("224.0.0.0/4")
   },
   {
     name: "link local", // RFC3927
-    bytes: v4.addrToBytes("169.254.0.0"),
-    cidr: 16
+    network: new Network("169.254.0.0/16")
   },
   {
     name: "loopback", // RFC5735
-    bytes: v4.addrToBytes("127.0.0.0"),
-    cidr: 8
+    network: new Network("127.0.0.0/8")
   },
   {
     name: "carrier grade nat", // RFC6598
-    bytes: v4.addrToBytes("100.64.0.0"),
-    cidr: 10
+    network: new Network("100.64.0.0/10")
   },
   {
     name: "private", // RFC1918
-    bytes: v4.addrToBytes("10.0.0.0"),
-    cidr: 8
+    network: new Network("10.0.0.0/8")
   },
   {
     name: "private", // RFC1918
-    bytes: v4.addrToBytes("172.16.0.0"),
-    cidr: 12
+    network: new Network("172.16.0.0/12")
   },
   {
     name: "private", // RFC1918
-    bytes: v4.addrToBytes("192.168.0.0"),
-    cidr: 16
+    network: new Network("192.168.0.0/16")
   },
   {
     name: "reserved", // 5735, 5737, 2544, 1700
-    bytes: v4.addrToBytes("192.0.0.0"),
-    cidr: 24
+    network: new Network("192.0.0.0/24")
   },
   {
     name: "reserved", // 5735, 5737, 2544, 1700
-    bytes: v4.addrToBytes("192.0.2.0"),
-    cidr: 24
+    network: new Network("192.0.2.0/24")
   },
   {
     name: "reserved", // 5735, 5737, 2544, 1700
-    bytes: v4.addrToBytes("192.88.99.0"),
-    cidr: 24
+    network: new Network("192.88.99.0/24")
   },
   {
     name: "reserved", // 5735, 5737, 2544, 1700
-    bytes: v4.addrToBytes("198.51.100.0"),
-    cidr: 24
+    network: new Network("198.51.100.0/24")
   },
   {
     name: "reserved", // 5735, 5737, 2544, 1700
-    bytes: v4.addrToBytes("203.0.113.0"),
-    cidr: 24
+    network: new Network("203.0.113.0/24")
   },
   {
     name: "reserved", // 5735, 5737, 2544, 1700
-    bytes: v4.addrToBytes("240.0.0.0"),
-    cidr: 24
+    network: new Network("240.0.0.0/24")
   }
 ];
 
-export const ipv6SpecialRanges = [
+export const specialIPv6 = [
   {
     name: "unspecified", // RFC4291
-    bytes: v6.addrToBytes("::"),
-    cidr: 128
+    network: new Network("::/128")
   },
   {
     name: "link local", // RFC4291
-    bytes: v6.addrToBytes("fe80::"),
-    cidr: 10
+    network: new Network("fe80::/10")
   },
   {
     name: "multicast", // RFC4291
-    bytes: v6.addrToBytes("ff00::"),
-    cidr: 8
+    network: new Network("ff00::/8")
   },
   {
     name: "loopback", // RFC4291
-    bytes: v6.addrToBytes("::1"),
-    cidr: 128
+    network: new Network("::1/128")
   },
   {
     name: "unique local", // RFC4291
-    bytes: v6.addrToBytes("fc00::"),
-    cidr: 7
+    network: new Network("fc00::/7")
   },
   {
     name: "ipv4 mapped", // RFC4291
-    bytes: v6.addrToBytes("::ffff:0:0"),
-    cidr: 96
+    network: new Network("::ffff:0:0/96")
   },
   {
     name: "rfc6145", // RFC6145
-    bytes: v6.addrToBytes("::ffff:0:0:0"),
-    cidr: 96
+    network: new Network("::ffff:0:0:0/96")
   },
   {
     name: "rfc6052", // RFC6052
-    bytes: v6.addrToBytes("64:ff9b::"),
-    cidr: 96
+    network: new Network("64:ff9b::/96")
   },
   {
     name: "6to4", // RFC3056
-    bytes: v6.addrToBytes("2002::"),
-    cidr: 16
+    network: new Network("2002::/16")
   },
   {
     name: "teredo", // RFC6052, RFC6146
-    bytes: v6.addrToBytes("2001::"),
-    cidr: 32
+    network: new Network("2001::/32")
   },
   {
     name: "reserved", // RFC4291
-    bytes: v6.addrToBytes("2001:db8::"),
-    cidr: 32
+    network: new Network("2001:db8::/32")
   }
 ];
