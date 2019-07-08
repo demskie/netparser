@@ -393,7 +393,7 @@ export function summarize(networks: string[], strict?: boolean, throwErrors?: bo
         net = { bytes: addr, cidr: 128 };
       }
     }
-    subnets[i] = net;
+    subnets.push(net);
   }
   shared.sortNetworks(subnets);
   subnets = shared.summarizeSortedNetworks(subnets);
