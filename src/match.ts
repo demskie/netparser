@@ -1,16 +1,17 @@
 import * as shared from "./shared";
 import * as sort from "./sort";
 
+import { Network } from "./network";
+
 export class Matcher {
-  private readonly sorted = [] as shared.Network[];
+  private readonly sorted = [] as Network[];
 
   public constructor(networks?: string[]) {
-    const subnets = [] as shared.Network[];
+    var subnets = [] as Network[];
     if (networks) {
-      for (let netString of networks) {
-        let network = shared.parseNetworkString(netString, false, false);
-        if (!network) continue;
-        subnets.push(network);
+      for (var s of networks) {
+        var net = shared.parseBaseNetwork(s, false, false);
+        if (net && net.isValid()) subnets.push(net);
       }
     }
     shared.sortNetworks(subnets);
@@ -18,14 +19,12 @@ export class Matcher {
   }
 
   public has(network: string) {
-    const net = shared.parseNetworkString(network, false, false);
-    if (!net) return false;
-    let s = shared.bytesToAddr(net.bytes, false);
-    if (!s) return false;
-    const idx = sort.binarySearchForInsertionIndex(net, this.sorted);
+    var net = shared.parseBaseNetwork(network, false, false);
+    if (!net || !net.isValid()) return false;
+    var idx = sort.binarySearchForInsertionIndex(net, this.sorted);
     if (idx < 0) return false;
-    if (idx < this.sorted.length && shared.networkContainsSubnet(this.sorted[idx], net)) return true;
-    if (idx - 1 >= 0 && shared.networkContainsSubnet(this.sorted[idx - 1], net)) return true;
+    if (idx < this.sorted.length && this.sorted[idx].contains(net)) return true;
+    if (idx - 1 >= 0 && this.sorted[idx - 1].contains(net)) return true;
     return false;
   }
 }

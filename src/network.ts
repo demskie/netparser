@@ -7,36 +7,84 @@ const EQUALS = 0;
 const AFTER = 1;
 
 export class Network {
-  private address = new Address();
-  private cidr = -1;
+  public readonly addr = new Address();
+  private netbits = -1;
 
   public constructor(network?: string, throwErrors?: boolean) {
     if (network) {
       var net = parse.network(network, throwErrors);
       if (net) {
-        this.address.fromBytes(net.bytes);
-        this.cidr = net.cidr;
+        this.addr.setBytes(net.bytes);
+        this.netbits = net.cidr;
       }
     }
   }
 
-  public destroy() {
-    this.address.destroy();
-    this.cidr = -1;
+  public from(address: Address, cidr: number) {
+    this.addr.setBytes(address.bytes().slice());
+    this.setCIDR(cidr);
+    return this;
   }
 
-  public addr() {
-    return this.address;
+  public destroy() {
+    if (!this.addr.isValid()) {
+      this.addr.destroy();
+    }
+    this.netbits = -1;
+  }
+
+  public cidr() {
+    if (this.isValid()) {
+      return this.netbits;
+    }
+    return Number.NaN;
+  }
+
+  public isValid() {
+    return this.addr.isValid() && this.netbits !== -1;
+  }
+
+  public duplicate() {
+    var network = new Network();
+    if (this.isValid()) {
+      network.addr.setBytes(this.addr.bytes().slice());
+      network.netbits = this.netbits;
+    }
+    return network;
+  }
+
+  public toNetString() {
+    if (this.isValid()) {
+      return `${this.addr.toString()}/${this.netbits}`;
+    }
+    return "";
+  }
+
+  public next() {
+    this.addr.increase(this.netbits);
+    return this;
+  }
+
+  public previous() {
+    this.addr.decrease(this.netbits);
+    return this;
+  }
+
+  public lastAddr() {
+    var addr = this.addr.duplicate().applySubnetMask(this.netbits);
+    var maxCIDR = this.addr.bytes().length * 8;
+    for (var i = this.netbits + 1; i <= maxCIDR; i++) addr.increase(i);
+    return addr;
   }
 
   public setCIDR(cidr: number, throwErrors?: boolean) {
-    if (!this.isValidNetwork() || !this.address.isValid()) {
+    if (!this.addr.isValid()) {
       if (throwErrors) throw errors.InvalidSubnet;
       this.destroy();
     } else {
       cidr = Math.floor(cidr);
-      if (cidr >= 0 && cidr <= this.address.size() * 8) {
-        this.cidr = cidr;
+      if (cidr >= 0 && cidr <= this.addr.bytes().length * 8) {
+        this.netbits = cidr;
       } else {
         if (throwErrors) throw errors.NotValidCIDR;
         this.destroy();
@@ -45,69 +93,17 @@ export class Network {
     return this;
   }
 
-  public fromBytes(bytes: number[], cidr: number) {
-    if (cidr >= 0 && cidr <= bytes.length * 8) {
-      if (this.address.fromBytes(bytes).isValid()) {
-        this.cidr = cidr;
-      } else {
-        this.destroy();
-      }
-    }
-    return this;
-  }
-
-  public isValidNetwork() {
-    return this.address.isValid() && this.cidr !== -1;
-  }
-
-  public toNetString() {
-    if (this.isValidNetwork()) {
-      return `${this.address.toString()}/${this.cidr}`;
-    }
-    return "";
-  }
-
-  public getCIDR() {
-    if (this.isValidNetwork()) {
-      return this.cidr;
-    }
-    return Number.NaN;
-  }
-
-  public duplicate() {
-    var network = new Network();
-    if (this.isValidNetwork()) {
-      network.address = this.address.duplicate() as Address;
-      network.cidr = this.cidr;
-    }
-    return network;
-  }
-
-  public size() {
-    return this.address.size();
-  }
-
-  public next() {
-    this.address.increase(this.cidr);
-    return this;
-  }
-
-  public previous() {
-    this.address.decrease(this.cidr);
-    return this;
-  }
-
   public compare(network: Network) {
     // check that both networks are valid
-    if (!this.isValidNetwork() || !network.isValidNetwork()) return null;
+    if (!this.isValid() || !network.isValid()) return null;
 
     // compare addresses
-    var cmp = this.address.compare(network.address);
+    var cmp = this.addr.compare(network.addr);
     if (cmp !== EQUALS) return cmp;
 
     // compare subnet mask length
-    if (this.cidr < network.cidr) return BEFORE;
-    if (this.cidr > network.cidr) return AFTER;
+    if (this.netbits < network.netbits) return BEFORE;
+    if (this.netbits > network.netbits) return AFTER;
 
     // otherwise they must be equal
     return EQUALS;
@@ -115,27 +111,27 @@ export class Network {
 
   public contains(network: Network) {
     // check that both networks are valid
-    if (!this.isValidNetwork() || !network.isValidNetwork()) return false;
+    if (!this.isValid() || !network.isValid()) return false;
 
     // ensure that both IPs are of the same type
-    if (this.size() !== network.size()) return false;
+    if (this.addr.bytes().length !== network.addr.bytes().length) return false;
 
     // handle edge cases
-    if (this.cidr === 0) return true;
-    if (network.cidr === 0) return false;
+    if (this.netbits === 0) return true;
+    if (network.netbits === 0) return false;
 
     // our base address should be less than or equal to the other base address
-    if (this.address.compare(network.address) === AFTER) return false;
+    if (this.addr.compare(network.addr) === AFTER) return false;
 
     // get the next network address for both
     var next = this.duplicate().next();
     var otherNext = network.duplicate().next();
 
     // handle edge case where our next network address overflows
-    if (!next.isValidNetwork()) return true;
+    if (!next.isValid()) return true;
 
     // our address should be more than or equal to the other address
-    if (next.address.compare(otherNext.address) === BEFORE) return false;
+    if (next.addr.compare(otherNext.addr) === BEFORE) return false;
 
     // must be a child subnet
     return true;
@@ -143,14 +139,14 @@ export class Network {
 
   public intersects(network: Network) {
     // check that both networks are valid
-    if (!this.isValidNetwork() || !network.isValidNetwork()) return false;
+    if (!this.isValid() || !network.isValid()) return false;
 
     // ensure that both IPs are of the same type
-    if (this.size() !== network.size()) return false;
+    if (this.addr.bytes().length !== network.addr.bytes().length) return false;
 
     // handle edge cases
-    if (this.cidr === 0 || network.cidr == 0) return true;
-    var cmp = this.address.compare(network.address);
+    if (this.netbits === 0 || network.netbits == 0) return true;
+    var cmp = this.addr.compare(network.addr);
     if (cmp === EQUALS) return true;
 
     // ensure that alpha addr contains the baseAddress that comes first
@@ -164,10 +160,10 @@ export class Network {
     }
 
     // if either addresses overflowed than an intersection has occured
-    if (!alpha.isValidNetwork() || !bravo.isValidNetwork()) return true;
+    if (!alpha.isValid() || !bravo.isValid()) return true;
 
     // if alpha addr is now greater than or equal to bravo addr than we've intersected
-    if (alpha.address.greaterThanOrEqual(bravo.address)) return true;
+    if (alpha.addr.greaterThanOrEqual(bravo.addr)) return true;
 
     // otherwise we haven't intersected
     return false;
@@ -175,14 +171,14 @@ export class Network {
 
   public adjacent(network: Network) {
     // check that both networks are valid
-    if (!this.isValidNetwork() || !network.isValidNetwork()) return false;
+    if (!this.isValid() || !network.isValid()) return false;
 
     // ensure that both IPs are of the same type
-    if (this.size() !== network.size()) return false;
+    if (this.addr.bytes().length !== network.addr.bytes().length) return false;
 
     // handle edge cases
-    if (this.cidr === 0 || network.cidr == 0) return true;
-    var cmp = this.address.compare(network.address);
+    if (this.netbits === 0 || network.netbits == 0) return true;
+    var cmp = this.addr.compare(network.addr);
     if (cmp === EQUALS) return false;
 
     // ensure that alpha addr contains the baseAddress that comes first
@@ -196,10 +192,10 @@ export class Network {
     }
 
     // if alpha overflows then an adjacency is not possible
-    if (!alpha.isValidNetwork()) return false;
+    if (!alpha.isValid()) return false;
 
     // alpha addr should equal bravo for them to be perfectly adjacent
-    if (alpha.address.compare(bravo.address) === EQUALS) return true;
+    if (alpha.addr.compare(bravo.addr) === EQUALS) return true;
 
     // otherwise we aren't adjacent
     return false;

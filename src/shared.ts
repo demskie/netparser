@@ -1,8 +1,7 @@
-import * as v4 from "./ipv4";
-import * as v6 from "./ipv6";
 import * as sort from "./sort";
 import * as errors from "./errors";
 import { Network } from "./network";
+import { Address } from "./address";
 
 export function repeatString(s: string, count: number) {
   var result = "";
@@ -10,6 +9,19 @@ export function repeatString(s: string, count: number) {
     result += s;
   }
   return result;
+}
+
+export function getCIDR(s: string, throwErrors?: boolean) {
+  const splitAddr = s.split("/");
+  if (splitAddr.length === 2) {
+    const val = parseInt(splitAddr[1], 10);
+    if (Number.isInteger(val)) {
+      const maxCIDR = splitAddr[0].search(":") >= 0 ? 128 : 32;
+      if (0 < val && val <= maxCIDR) return val;
+    }
+  }
+  if (throwErrors) throw errors.GenericGetCIDR;
+  return null;
 }
 
 export function sortNetworks(networks: Network[]) {
@@ -31,6 +43,8 @@ export function summarizeSortedNetworks(sorted: Network[]) {
       if (sorted[idx].cidr() === sorted[i].cidr()) {
         if (sorted[idx].adjacent(sorted[i])) {
           sorted[idx].setCIDR(sorted[idx].cidr() - 1);
+          skipped++;
+          continue;
         }
       }
       break;
@@ -38,4 +52,48 @@ export function summarizeSortedNetworks(sorted: Network[]) {
     idx += skipped;
   }
   return summarized;
+}
+
+export function findNetworkIntersection(network: Network, otherNetworks: Network[]) {
+  for (var otherNet of otherNetworks) {
+    if (network.intersects(otherNet)) {
+      return otherNet;
+    }
+  }
+  return null;
+}
+
+export function findNetworkWithoutIntersection(otherNetworks: Network[], position: Address, startingCIDR?: number) {
+  if (!startingCIDR) startingCIDR = 0;
+  const maxCIDR = position.bytes().length * 8;
+  const canidate = new Network().from(position, startingCIDR);
+  while (canidate.cidr() <= maxCIDR) {
+    if (canidate.addr.isBaseAddress(canidate.cidr())) {
+      if (!findNetworkIntersection(canidate, otherNetworks)) {
+        return canidate;
+      }
+      if (canidate.cidr() >= maxCIDR) {
+        if (!canidate.addr.next().isValid()) return null;
+        canidate.setCIDR(startingCIDR);
+      }
+    }
+    canidate.setCIDR(canidate.cidr() + 1);
+  }
+  return null;
+}
+
+export function parseBaseNetwork(s: string, strict?: boolean, throwErrors?: boolean) {
+  const net = new Network(s, throwErrors);
+  if (!net.isValid()) return null;
+  if (!strict) {
+    net.addr.applySubnetMask(net.cidr());
+  } else {
+    const original = net.addr.duplicate();
+    net.addr.applySubnetMask(net.cidr());
+    if (!net.addr.equals(original)) {
+      if (throwErrors) throw errors.NotValidBaseNetworkAddress;
+      return null;
+    }
+  }
+  return net;
 }

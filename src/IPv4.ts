@@ -1,6 +1,7 @@
 import * as errors from "./errors";
-import * as shared from "./shared";
 import * as weight from "./weight";
+import { Address } from "./address";
+import { Network } from "./network";
 
 export function bytesToAddr(bytes: number[], throwErrors?: boolean) {
   if (bytes.length === 4) return `${bytes[0]}.${bytes[1]}.${bytes[2]}.${bytes[3]}`;
@@ -9,14 +10,14 @@ export function bytesToAddr(bytes: number[], throwErrors?: boolean) {
 }
 
 export function randomAddress() {
-  return bytesToAddr(Array.from(Array(4), () => Math.random() * 255));
+  return bytesToAddr(Array.from(Array(4), () => Math.floor(Math.random() * 256)));
 }
 
 const choices = Array.from(Array(31), (_, idx) => new weight.WeightedValue(Math.pow(2, idx), idx + 1));
 
 export function randomNetwork() {
-  const bytes = Array.from(Array(4), () => Math.random() * 255);
+  const bytes = Array.from(Array(4), () => Math.floor(Math.random() * 256));
+  const addr = new Address().setBytes(bytes);
   const cidr = weight.getValue(choices) as number;
-  shared.applySubnetMask(bytes, cidr);
-  return `${bytesToAddr(bytes)}/${cidr}`;
+  return new Network().from(addr, cidr).toNetString();
 }

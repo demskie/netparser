@@ -1,5 +1,9 @@
 import { Network } from "./network";
 
+const BEFORE = -1;
+const EQUALS = 0;
+const AFTER = 1;
+
 export function radixSortNetworks(networks: Network[], start: number, stop: number, byteIndex: number) {
   const runningPrefixSum = new Array(256) as number[];
   const offsetPrefixSum = new Array(256) as number[];
@@ -13,14 +17,14 @@ export function radixSortNetworks(networks: Network[], start: number, stop: numb
     let byteValue: number;
     switch (byteIndex) {
       case -1:
-        byteValue = networks[i].size();
+        byteValue = networks[i].addr.bytes().length;
         break;
       case 16:
         byteValue = networks[i].cidr();
         break;
       default:
-        if (byteIndex < networks[i].size()) {
-          byteValue = networks[i].addr().getByte(byteIndex);
+        if (byteIndex < networks[i].addr.bytes().length) {
+          byteValue = networks[i].addr.bytes()[byteIndex];
         } else {
           byteValue = 0;
         }
@@ -53,14 +57,14 @@ export function radixSortNetworks(networks: Network[], start: number, stop: numb
   while (redIndex < stop) {
     switch (byteIndex) {
       case -1:
-        redValue = networks[redIndex].size();
+        redValue = networks[redIndex].addr.bytes().length;
         break;
       case 16:
         redValue = networks[redIndex].cidr();
         break;
       default:
-        if (byteIndex < networks[redIndex].size()) {
-          redValue = networks[redIndex].addr().getByte(byteIndex);
+        if (byteIndex < networks[redIndex].addr.bytes().length) {
+          redValue = networks[redIndex].addr.bytes()[byteIndex];
         } else {
           redValue = 0;
         }
@@ -97,19 +101,17 @@ export function binarySearchForInsertionIndex(network: Network, sortedNetworks: 
   let right = sortedNetworks.length - 1;
   while (left < right) {
     let middle = Math.floor((left + right) / 2);
-    let netCmp = shared.compareNetworks(sortedNetworks[middle], network);
-    switch (netCmp) {
-      case shared.Pos.equals:
+    switch (sortedNetworks[middle].compare(network)) {
+      case EQUALS:
         return middle;
-      case shared.Pos.before:
+      case BEFORE:
         left = middle + 1;
         break;
-      case shared.Pos.after:
+      case AFTER:
         right = middle - 1;
         break;
     }
   }
-  let netCmp = shared.compareNetworks(sortedNetworks[left], network);
-  if (netCmp === shared.Pos.before) return left + 1;
+  if (sortedNetworks[left].compare(network) === BEFORE) return left + 1;
   return left;
 }

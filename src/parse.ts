@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
-import * as shared from "./shared";
 import * as errors from "./errors";
 
 export function network(s: string, throwErrors?: boolean) {
@@ -23,10 +22,10 @@ export function network(s: string, throwErrors?: boolean) {
   }
   var bytes = isIPv4 ? v4AddrToBytes(parts[0]) : v6AddrToBytes(parts[0]);
   if (bytes === null) {
-    if (throwErrors) throw errors.GenericNetworkParse;
+    if (throwErrors) throw Error(`could not convert string to bytes`); //errors.GenericNetworkParse;
     return null;
   }
-  return { bytes, cidr } as shared.Network;
+  return { bytes, cidr };
 }
 
 function looksLikeIPv4(s: string) {
@@ -66,8 +65,8 @@ function isOneDigit(s: string) {
   }
 }
 
-function v4AddrToBytes(old: string) {
-  var bytes = new Uint8Array(4);
+export function v4AddrToBytes(old: string) {
+  var bytes = new Array(4) as number[];
   var parts = old.split(".");
   if (parts.length === 4) {
     for (var i = 0; i < parts.length; i++) {
@@ -97,8 +96,8 @@ function v4AddrToBytes(old: string) {
     2001:db8::1#80
 */
 
-function v6AddrToBytes(old: string) {
-  const bytes = new Uint8Array(16);
+export function v6AddrToBytes(old: string) {
+  const bytes = new Array(16).fill(0) as number[];
   if (old.length === 0) return null;
   if (old[0] === "[") {
     old = removeBrackets(old);
@@ -107,25 +106,27 @@ function v6AddrToBytes(old: string) {
   var halves = old.split("::");
   if (halves.length === 0 || halves.length > 2) return null;
   var leftByteIndex = 0;
-  var leftParts = halves[0].split(":");
-  for (var i = 0; i < leftParts.length; i++) {
-    if (leftByteIndex >= 16) return bytes;
-    var x = parseInt(leftParts[i], 16);
-    if (Number.isNaN(x)) {
-      var ipv4Parts = leftParts[i].split(".");
-      if (ipv4Parts.length !== 4) return null;
-      for (var j = 0; j < ipv4Parts.length; j++) {
-        x = parseInt(ipv4Parts[j], 10);
-        if (Number.isNaN(x) || x < 0 || x > 255) return null;
-        bytes[leftByteIndex++] = x;
+  if (halves[0] !== "") {
+    var leftParts = halves[0].split(":");
+    for (var i = 0; i < leftParts.length; i++) {
+      if (leftByteIndex >= 16) return bytes;
+      var x = parseInt(leftParts[i], 16);
+      if (Number.isNaN(x)) {
+        var ipv4Parts = leftParts[i].split(".");
+        if (ipv4Parts.length !== 4) return null;
+        for (var j = 0; j < ipv4Parts.length; j++) {
+          x = parseInt(ipv4Parts[j], 10);
+          if (Number.isNaN(x) || x < 0 || x > 255) return null;
+          bytes[leftByteIndex++] = x;
+        }
+        continue;
       }
-      continue;
+      if (x < 0 || x > 65535) return null;
+      bytes[leftByteIndex++] = Math.floor(x / 256);
+      bytes[leftByteIndex++] = Math.floor(x % 256);
     }
-    if (x < 0 || x > 65535) return null;
-    bytes[leftByteIndex++] = Math.floor(x / 256);
-    bytes[leftByteIndex++] = Math.floor(x % 256);
   }
-  if (halves.length === 2) {
+  if (halves.length === 2 && halves[1] !== "") {
     return parseRightHalf(bytes, leftByteIndex, halves[1].split(":"));
   }
   return bytes;
@@ -140,7 +141,7 @@ function removeBrackets(s: string) {
   return s.substring(1);
 }
 
-function parseRightHalf(bytes: Uint8Array, leftByteIndex: number, rightParts: string[]) {
+function parseRightHalf(bytes: number[], leftByteIndex: number, rightParts: string[]) {
   var rightByteIndex = 15;
   for (var i = rightParts.length - 1; i >= 0; i--) {
     if (leftByteIndex > rightByteIndex) return null;
@@ -156,8 +157,8 @@ function parseRightHalf(bytes: Uint8Array, leftByteIndex: number, rightParts: st
       continue;
     }
     if (x < 0 || x > 65535) return null;
-    bytes[rightByteIndex--] = Math.floor(x / 256);
     bytes[rightByteIndex--] = Math.floor(x % 256);
+    bytes[rightByteIndex--] = Math.floor(x / 256);
   }
   return bytes;
 }

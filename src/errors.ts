@@ -17,3 +17,5 @@ export const GenericFindLongestZeroHextetChain = new Error("unable to findLonges
 
 export const InvalidSubnet = new Error("invalid subnet");
 export const NotValidCIDR = new Error("'cidr' was not a valid integer");
+
+export const InvalidAddress = new Error("invalid address");
