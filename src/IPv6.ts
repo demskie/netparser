@@ -1,5 +1,6 @@
 import * as errors from "./errors";
 import * as weight from "./weight";
+
 import { Network } from "./network";
 import { Address } from "./address";
 
@@ -57,5 +58,5 @@ export function randomNetwork() {
   const bytes = Array.from(Array(16), () => Math.floor(Math.random() * 256));
   const addr = new Address().setBytes(bytes);
   const cidr = weight.getValue(choices) as number;
-  return new Network().from(addr, cidr).toNetString();
+  return new Network().from(addr, cidr).toString();
 }

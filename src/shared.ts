@@ -1,20 +1,13 @@
 import * as sort from "./sort";
 import * as errors from "./errors";
+
 import { Network } from "./network";
 import { Address } from "./address";
-
-export function repeatString(s: string, count: number) {
-  var result = "";
-  for (var i = 0; i < count; i++) {
-    result += s;
-  }
-  return result;
-}
 
 export function getCIDR(s: string, throwErrors?: boolean) {
   const splitAddr = s.split("/");
   if (splitAddr.length === 2) {
-    const val = parseInt(splitAddr[1], 10);
+    const val = Number(splitAddr[1]);
     if (Number.isInteger(val)) {
       const maxCIDR = splitAddr[0].search(":") >= 0 ? 128 : 32;
       if (0 < val && val <= maxCIDR) return val;

@@ -1,5 +1,6 @@
 import * as parse from "./parse";
 import * as errors from "./errors";
+
 import { Address } from "./address";
 
 const BEFORE = -1;
@@ -22,8 +23,7 @@ export class Network {
 
   public from(address: Address, cidr: number) {
     this.addr.setBytes(address.bytes().slice());
-    this.setCIDR(cidr);
-    return this;
+    return this.setCIDR(cidr);
   }
 
   public destroy() {
@@ -31,6 +31,7 @@ export class Network {
       this.addr.destroy();
     }
     this.netbits = -1;
+    return this;
   }
 
   public cidr() {
@@ -53,7 +54,7 @@ export class Network {
     return network;
   }
 
-  public toNetString() {
+  public toString() {
     if (this.isValid()) {
       return `${this.addr.toString()}/${this.netbits}`;
     }

@@ -61,7 +61,7 @@ export function broadcastAddress(network: string, throwErrors?: boolean) {
 export function findUnusedSubnets(aggregate: string, subnets: string[], strict?: boolean, throwErrors?: boolean) {
   const agg = shared.parseBaseNetwork(aggregate, strict, throwErrors);
   if (!agg || !agg.isValid()) return null;
-  if (subnets.length === 0) return [`${agg.toNetString()}`];
+  if (subnets.length === 0) return [`${agg.toString()}`];
   const subnetworks = [] as Network[];
   for (var s of subnets) {
     const net = shared.parseBaseNetwork(s, strict, throwErrors);
@@ -79,7 +79,7 @@ export function findUnusedSubnets(aggregate: string, subnets: string[], strict?:
   while (currentSubnet) {
     currentSubnet = shared.findNetworkWithoutIntersection(subnetworks, currentSubnet.addr, currentSubnet.cidr());
     if (!currentSubnet) break;
-    results.push(`${currentSubnet.toNetString()}`);
+    results.push(`${currentSubnet.toString()}`);
     if (!currentSubnet.next().isValid()) break;
     if (currentSubnet.addr.greaterThan(lastAggAddr)) break;
     currentSubnet.setCIDR(agg.cidr());
@@ -115,7 +115,7 @@ export function ip(address: string, throwErrors?: boolean) {
  * @returns The parsed network address or null in case of error
  */
 export function network(networkAddress: string, throwErrors?: boolean) {
-  const net = new Network(networkAddress, throwErrors).toNetString();
+  const net = new Network(networkAddress, throwErrors).toString();
   return net.length > 0 ? net : null;
 }
 
@@ -255,7 +255,7 @@ export function nextNetwork(network: string, strict?: boolean, throwErrors?: boo
     if (throwErrors) throw errors.OverflowedAddressSpace;
     return null;
   }
-  return net.toNetString();
+  return net.toString();
 }
 
 /**
@@ -293,7 +293,7 @@ export function rangeOfNetworks(startAddress: string, stopAddress: string, throw
     while (!net.addr.isBaseAddress(net.cidr()) || net.lastAddr().greaterThan(stopAddr)) {
       net.setCIDR(net.cidr() + 1);
     }
-    results.push(net.toNetString());
+    results.push(net.toString());
     net.next().setCIDR(1);
   }
   return results;
@@ -332,7 +332,7 @@ export function sort(networkAddresses: string[], throwErrors?: boolean) {
   const results = new Array(subnets.length) as string[];
   for (let i = 0; i < subnets.length; i++) {
     if (foundCIDR) {
-      results[i] = subnets[i].toNetString();
+      results[i] = subnets[i].toString();
     } else {
       results[i] = subnets[i].addr.toString();
     }
@@ -369,7 +369,7 @@ export function summarize(networks: string[], strict?: boolean, throwErrors?: bo
   subnets = shared.summarizeSortedNetworks(subnets);
   const results = new Array(subnets.length) as string[];
   for (let i = 0; i < subnets.length; i++) {
-    results[i] = subnets[i].toNetString();
+    results[i] = subnets[i].toString();
   }
   return results;
 }

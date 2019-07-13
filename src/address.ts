@@ -2,6 +2,7 @@ import * as ipv4 from "./ipv4";
 import * as ipv6 from "./ipv6";
 import * as parse from "./parse";
 import * as errors from "./errors";
+import * as ranges from "./ranges";
 
 import { Network } from "./network";
 
@@ -40,29 +41,55 @@ export class Address {
     if (this.isValid()) {
       this.arr = [];
     }
+    return this;
   }
 
   public isValid() {
     return this.arr.length > 0;
   }
 
+  public is6to4() {
+    return ranges.check(this, "6to4");
+  }
+
+  public isIPv4() {
+    return this.arr.length === 4;
+  }
+
+  public isIPv6() {
+    return this.arr.length === 16;
+  }
+
+  public isLinkLocal() {
+    return ranges.check(this, "linkLocal");
+  }
+
+  public isLoopback() {
+    return ranges.check(this, "loopback");
+  }
+
+  public isMulticast() {
+    return ranges.check(this, "multicast");
+  }
+
+  public isTeredo() {
+    return ranges.check(this, "teredo");
+  }
+
   public toString() {
     if (!this.isValid()) return "";
     if (this.arr.length === 4) {
-      return `${ipv4.bytesToAddr(this.bytes())}`;
+      return `${ipv4.bytesToAddr(this.arr)}`;
     }
-    return `${ipv6.bytesToAddr(this.bytes())}`;
+    return `${ipv6.bytesToAddr(this.arr)}`;
   }
 
   public toNetwork() {
-    const net = new Network();
-    if (this.isValid()) net.setCIDR(this.arr.length * 8).addr.setBytes(this.arr);
-    return net;
+    return new Network().from(new Address().setBytes(this.arr), this.arr.length * 8);
   }
 
   public duplicate() {
-    if (!this.isValid()) return new Address();
-    return new Address().setBytes(this.bytes().slice());
+    return new Address().setBytes(this.arr.slice());
   }
 
   public lessThan(address: Address) {
