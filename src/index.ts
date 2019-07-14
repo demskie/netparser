@@ -311,7 +311,7 @@ export function rangeOfNetworks(startAddress: string, stopAddress: string, throw
  * @returns An array of networks or null in case of error
  */
 export function sort(networkAddresses: string[], throwErrors?: boolean) {
-  const subnets = new Array(networkAddresses.length) as Network[];
+  let subnets = new Array(networkAddresses.length) as Network[];
   let foundCIDR = false;
   for (let i = 0; i < networkAddresses.length; i++) {
     const addr = new Address(networkAddresses[i], throwErrors);
@@ -328,7 +328,7 @@ export function sort(networkAddresses: string[], throwErrors?: boolean) {
     }
     subnets[i] = new Network().from(addr, cidr);
   }
-  shared.sortNetworks(subnets);
+  subnets = shared.sortNetworks(subnets);
   const results = new Array(subnets.length) as string[];
   for (let i = 0; i < subnets.length; i++) {
     if (foundCIDR) {
@@ -365,7 +365,7 @@ export function summarize(networks: string[], strict?: boolean, throwErrors?: bo
       return null;
     }
   }
-  shared.sortNetworks(subnets);
+  subnets = shared.sortNetworks(subnets);
   subnets = shared.summarizeSortedNetworks(subnets);
   const results = new Array(subnets.length) as string[];
   for (let i = 0; i < subnets.length; i++) {

@@ -6,7 +6,10 @@
   "scripts": {
     "build": "tsc && docts && jest --coverage",
     "test": "tsc --noEmit && jest --coverage",
-    "bench": "ts-node -T src/benchmarks/index.bench.ts && ts-node -T src/benchmarks/match.bench.ts"
+    "bench": "npm run bench-index && npm run bench-match && npm run bench-sort",
+    "bench-index": "ts-node -T src/benchmarks/index.bench.ts",
+    "bench-match": "ts-node -T src/benchmarks/match.bench.ts",
+    "bench-sort": "ts-node -T src/benchmarks/sort.bench.ts"
   },
   "repository": {
     "type": "git",

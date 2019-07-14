@@ -5,15 +5,15 @@ import * as ipv6 from "../ipv6";
 import * as ipaddr from "ipaddr.js";
 import { default as cidrMatcher } from "cidr-matcher";
 
-const ipv4Addresses = Array.from(Array(1000), () => ipv4.randomAddress());
-const ipv4Subnets = Array.from(Array(10000), () => ipv4.randomNetwork());
+const ipv4Addresses = Array.from(Array(1000), () => ipv4.randomAddress().toString());
+const ipv4Subnets = Array.from(Array(10000), () => ipv4.randomNetwork().toString());
 
 let netparserMatcherIPv4 = new match.Matcher();
 let ipaddrRangeListIPv4 = { subnetRanges: [] };
 let cidrMatcherIPv4 = new cidrMatcher(ipv4Subnets);
 
-const ipv6Addresses = Array.from(Array(1000), () => ipv6.randomAddress());
-const ipv6Subnets = Array.from(Array(10000), () => ipv6.randomNetwork());
+const ipv6Addresses = Array.from(Array(1000), () => ipv6.randomAddress().toString());
+const ipv6Subnets = Array.from(Array(10000), () => ipv6.randomNetwork().toString());
 
 let netparserMatcherIPv6 = new match.Matcher();
 let ipaddrRangeListIPv6 = { subnetRanges: [] };

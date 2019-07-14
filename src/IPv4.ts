@@ -20,5 +20,5 @@ export function randomNetwork() {
   const bytes = Array.from(Array(4), () => Math.floor(Math.random() * 256));
   const addr = new Address().setBytes(bytes);
   const cidr = weight.getValue(choices) as number;
-  return new Network().from(addr, cidr).toString();
+  return new Network().from(addr, cidr);
 }

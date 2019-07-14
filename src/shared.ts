@@ -18,9 +18,10 @@ export function getCIDR(s: string, throwErrors?: boolean) {
 }
 
 export function sortNetworks(networks: Network[]) {
-  if (networks && networks.length > 1) {
-    sort.radixSortNetworks(networks, 0, networks.length, -1);
+  if (networks.length < 10000) {
+    return sort.insertionSort(networks);
   }
+  return sort.nativeSort(networks);
 }
 
 export function summarizeSortedNetworks(sorted: Network[]) {
