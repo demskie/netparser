@@ -1,6 +1,5 @@
 import * as shared from "./shared";
 import * as sort from "./sort";
-
 import { Network } from "./network";
 
 export class Matcher {
@@ -26,5 +25,13 @@ export class Matcher {
     if (idx < this.sorted.length && this.sorted[idx].contains(net)) return true;
     if (idx - 1 >= 0 && this.sorted[idx - 1].contains(net)) return true;
     return false;
+  }
+
+  public add(network: string) {
+    var net = shared.parseBaseNetwork(network, false, false);
+    if (!net || !net.isValid()) return;
+    var idx = sort.binarySearchForInsertionIndex(net, this.sorted);
+    if (idx < this.sorted.length && this.sorted[idx].compare(net) === 0) return;
+    this.sorted.splice(idx, 0, net);
   }
 }

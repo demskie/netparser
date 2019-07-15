@@ -1,6 +1,5 @@
 import * as errors from "./errors";
 import * as weight from "./weight";
-
 import { Network } from "./network";
 import { Address } from "./address";
 

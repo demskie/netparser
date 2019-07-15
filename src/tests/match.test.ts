@@ -171,3 +171,25 @@ test("sanity check Matcher #8", () => {
   const matcher = new match.Matcher(input);
   expect(matcher.has("192.168.0.255")).toEqual(true);
 });
+
+test("sanity check Matcher #9", () => {
+  const input = [
+    "192.168.0.24/32",
+    "192.168.0.52/32",
+    "192.168.0.171/32",
+    "192.168.0.222/32",
+    "192.168.0.124/32",
+    "192.168.0.123/32",
+    "192.168.0.234/32",
+    "192.168.0.254/31",
+    "192.168.0.0/32",
+    "192.168.0.3/32",
+    "192.168.0.170/32",
+    "192.168.0.125/32"
+  ];
+  const matcher = new match.Matcher();
+  input.forEach((s: string) => {
+    matcher.add(s);
+  });
+  expect(matcher.has("192.168.0.255")).toEqual(true);
+});

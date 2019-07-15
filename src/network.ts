@@ -1,6 +1,5 @@
 import * as parse from "./parse";
 import * as errors from "./errors";
-
 import { Address } from "./address";
 
 const BEFORE = -1;

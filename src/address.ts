@@ -3,7 +3,6 @@ import * as ipv6 from "./ipv6";
 import * as parse from "./parse";
 import * as errors from "./errors";
 import * as ranges from "./ranges";
-
 import { Network } from "./network";
 
 const BEFORE = -1;

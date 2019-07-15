@@ -1,8 +1,8 @@
 import * as shared from "./shared";
 import * as errors from "./errors";
-
 import { Network } from "./network";
 import { Address } from "./address";
+import { Matcher } from "./match";
 
 const BEFORE = -1;
 const EQUALS = 0;
@@ -379,6 +379,7 @@ module.exports = {
   broadcastAddress,
   findUnusedSubnets,
   ip,
+  Matcher,
   network,
   networkComesBefore,
   networkContainsAddress,
@@ -390,8 +391,3 @@ module.exports = {
   sort,
   summarize
 };
-
-// The following functions are pending an implementation:
-
-// IPv4ClassfulNetwork() eithers return the classful network given an IPv4 address or
-// returns nil if given a multicast address or IPv6 address

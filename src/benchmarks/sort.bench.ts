@@ -2,6 +2,7 @@ import * as Benchmark from "benchmark";
 import * as ipv4 from "../ipv6";
 import * as sort from "../sort";
 import { Network } from "../network";
+import { fixedWidth } from "./formatters";
 
 const e2Alpha = Array.from(Array(1e2), () => ipv4.randomNetwork());
 const e2Bravo = Array.from(e2Alpha, (net: Network) => net.duplicate());
@@ -21,51 +22,51 @@ const e5Charlie = Array.from(e5Alpha, (net: Network) => net.duplicate());
 
 new Benchmark.Suite("sort.bench.ts")
 
-  .add("\tsort n=100 (native)\t", () => {
+  .add(fixedWidth("sort n=100 (native)", 30), () => {
     sort.nativeSort(e2Alpha);
   })
 
-  .add("\tsort n=100 (insertion)\t", () => {
+  .add(fixedWidth("sort n=100 (insertion)", 30), () => {
     sort.insertionSort(e2Bravo);
   })
 
-  .add("\tsort n=100 (radix msd)\t", () => {
+  .add(fixedWidth("sort n=100 (radix msd)", 30), () => {
     sort.radixSort(e2Charlie);
   })
 
-  .add("\tsort n=1000 (native)\t", () => {
+  .add(fixedWidth("sort n=1000 (native)", 30), () => {
     sort.nativeSort(e3Alpha);
   })
 
-  .add("\tsort n=1000 (insertion)\t", () => {
+  .add(fixedWidth("sort n=1000 (insertion)", 30), () => {
     sort.insertionSort(e3Bravo);
   })
 
-  .add("\tsort n=1000 (radix msd)\t", () => {
+  .add(fixedWidth("sort n=1000 (radix msd)", 30), () => {
     sort.radixSort(e3Charlie);
   })
 
-  .add("\tsort n=10000 (native)\t", () => {
+  .add(fixedWidth("sort n=10000 (native)", 30), () => {
     sort.nativeSort(e4Alpha);
   })
 
-  .add("\tsort n=10000 (insertion)", () => {
+  .add(fixedWidth("sort n=10000 (insertion)", 30), () => {
     sort.insertionSort(e4Bravo);
   })
 
-  .add("\tsort n=10000 (radix msd)", () => {
+  .add(fixedWidth("sort n=10000 (radix msd)", 30), () => {
     sort.radixSort(e4Charlie);
   })
 
-  .add("\tsort n=100000 (native)\t", () => {
+  .add(fixedWidth("sort n=100000 (native)", 30), () => {
     sort.nativeSort(e5Alpha);
   })
 
-  .add("\tsort n=100000 (insertion)", () => {
+  .add(fixedWidth("sort n=100000 (insertion)", 30), () => {
     sort.insertionSort(e5Bravo);
   })
 
-  .add("\tsort n=100000 (radix msd)", () => {
+  .add(fixedWidth("sort n=100000 (radix msd)", 30), () => {
     sort.radixSort(e5Charlie);
   })
 

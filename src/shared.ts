@@ -1,6 +1,5 @@
 import * as sort from "./sort";
 import * as errors from "./errors";
-
 import { Network } from "./network";
 import { Address } from "./address";
 
