@@ -345,12 +345,12 @@ test("sanity check sort #3", () => {
 });
 
 test("sanity check summarize #1", () => {
-  const output = index.summarize(["192.168.0.0/16", "192.168.1.1", "192.168.2.3/31"], true);
+  const output = index.summarize(["192.168.0.0/16", "192.168.1.1", "192.168.2.3/31"], false, true);
   expect(output).toEqual(["192.168.0.0/16"]);
 });
 
 test("sanity check summarize #2", () => {
-  const output = index.summarize(["192.168.0.0/16", "::1", "192.168.1.1", "192.168.2.3/31"], true);
+  const output = index.summarize(["192.168.0.0/16", "::1", "192.168.1.1", "192.168.2.3/31"], false, true);
   expect(output).toEqual(["192.168.0.0/16", "::1/128"]);
 });
 
@@ -368,7 +368,7 @@ test("sanity check summarize #4", () => {
 
 test("sanity check IPv6 parsing #1", () => {
   const output = index.ip("[2001:db8::1]:80");
-  // expect(output).toEqual("2001:db8::1");
+  expect(output).toEqual("2001:db8::1");
 });
 
 test("sanity check IPv6 parsing #2", () => {
@@ -383,7 +383,7 @@ test("sanity check IPv6 parsing #3", () => {
 
 test("sanity check IPv6 parsing #4", () => {
   const output = index.ip("2001:db8::1 port 80");
-  // expect(output).toEqual("2001:db8::1");
+  expect(output).toEqual("2001:db8::1");
 });
 
 test("sanity check IPv6 parsing #5", () => {

@@ -11,7 +11,11 @@ export const AddrInvalidInteger = new Error("'addr' has at least one invalid int
 export const AddrNotFourElements = new Error("'addr' was not four elements long");
 export const BytesNotFourElements = new Error("'bytes' was not at least four elements long");
 
-export const GenericAddrToBytes = new Error("unable to convert string to bytes");
+export const GenericNetworkParse = new Error("unable to parse string");
 export const GenericBytesToAddr = new Error("unable to convert bytes to string");
 export const GenericFindLongestZeroHextetChain = new Error("unable to findLongestZeroHextetChain");
-export const GenericPadZeros = new Error("unable to padZeros for IPv6 address");
+
+export const InvalidSubnet = new Error("invalid subnet");
+export const NotValidCIDR = new Error("'cidr' was not a valid integer");
+
+export const InvalidAddress = new Error("invalid address");

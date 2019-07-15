@@ -1,5 +1,12 @@
 import * as shared from "./shared";
 import * as errors from "./errors";
+import { Network } from "./network";
+import { Address } from "./address";
+import { Matcher } from "./match";
+
+const BEFORE = -1;
+const EQUALS = 0;
+const AFTER = 1;
 
 /**
  * BaseAddress returns the base address for a given subnet address
@@ -13,20 +20,10 @@ import * as errors from "./errors";
  * @returns The first address in a subnet or null in case of error
  */
 export function baseAddress(networkAddress: string, throwErrors?: boolean) {
-  networkAddress = networkAddress.trim();
-  if (shared.hasColon(networkAddress)) {
-    networkAddress = shared.removeBrackets(networkAddress);
-  }
-  const ip = shared.removeCIDR(networkAddress, throwErrors);
-  const cidr = shared.getCIDR(networkAddress, throwErrors);
-  if (ip !== null && cidr !== null) {
-    const bytes = shared.addrToBytes(ip, throwErrors);
-    if (bytes !== null) {
-      shared.applySubnetMask(bytes, cidr);
-      return shared.bytesToAddr(bytes, throwErrors);
-    }
-  }
-  return null;
+  const net = new Network(networkAddress, throwErrors);
+  if (!net.isValid()) return null;
+  net.addr.applySubnetMask(net.cidr());
+  return net.addr.toString();
 }
 
 /**
@@ -42,13 +39,10 @@ export function baseAddress(networkAddress: string, throwErrors?: boolean) {
  * @returns An IPv4 address or null in case of error
  */
 export function broadcastAddress(network: string, throwErrors?: boolean) {
-  const net = shared.parseNetworkString(network, false, throwErrors);
-  if (!net) return null;
-  if (!shared.increaseAddressWithCIDR(net.bytes, net.cidr, throwErrors)) return null;
-  if (!shared.decreaseAddressWithCIDR(net.bytes, net.bytes.length * 8, throwErrors)) return null;
-  const addr = shared.bytesToAddr(net.bytes, throwErrors);
-  if (!addr) return null;
-  return `${addr}`;
+  const net = new Network(network, throwErrors);
+  if (!net.isValid() || net.addr.bytes().length === 16) return null;
+  net.addr.applySubnetMask(net.cidr());
+  return net.lastAddr().toString();
 }
 
 /**
@@ -65,36 +59,30 @@ export function broadcastAddress(network: string, throwErrors?: boolean) {
  * @returns A boolean or null in case of error
  */
 export function findUnusedSubnets(aggregate: string, subnets: string[], strict?: boolean, throwErrors?: boolean) {
-  const aggnetwork = shared.parseNetworkString(aggregate, throwErrors, strict);
-  if (!aggnetwork) return null;
-  if (subnets.length === 0) return [aggregate];
-  const subnetworks = [] as shared.Network[];
+  const agg = shared.parseBaseNetwork(aggregate, strict, throwErrors);
+  if (!agg || !agg.isValid()) return null;
+  if (subnets.length === 0) return [`${agg.toString()}`];
+  const subnetworks = [] as Network[];
   for (var s of subnets) {
-    const net = shared.parseNetworkString(s, throwErrors, strict);
-    if (!net) return null;
-    if (aggnetwork.bytes.length === net.bytes.length) {
+    const net = shared.parseBaseNetwork(s, strict, throwErrors);
+    if (!net || !net.isValid()) {
+      if (strict) return null;
+      continue;
+    }
+    if (agg.addr.bytes().length === net.addr.bytes().length) {
       subnetworks.push(net);
     }
   }
-  const aggnetworkEnd = shared.duplicateAddress(aggnetwork.bytes);
-  shared.increaseAddressWithCIDR(aggnetworkEnd, aggnetwork.cidr);
-  shared.decreaseAddressWithCIDR(aggnetworkEnd, aggnetwork.bytes.length * 8);
+  const lastAggAddr = agg.lastAddr();
   const results = [] as string[];
-  let currentSubnet: shared.Network | null = aggnetwork;
+  let currentSubnet: Network | null = agg;
   while (currentSubnet) {
-    currentSubnet = shared.findNetworkWithoutIntersection(currentSubnet, subnetworks);
-    if (currentSubnet) {
-      const addr = shared.bytesToAddr(currentSubnet.bytes, throwErrors);
-      if (!addr) return null;
-      results.push(`${addr}/${currentSubnet.cidr}`);
-      if (
-        !shared.increaseAddressWithCIDR(currentSubnet.bytes, currentSubnet.cidr) ||
-        shared.compareAddresses(currentSubnet.bytes, aggnetworkEnd) > 0
-      ) {
-        break;
-      }
-      currentSubnet.cidr = aggnetwork.cidr;
-    }
+    currentSubnet = shared.findNetworkWithoutIntersection(subnetworks, currentSubnet.addr, currentSubnet.cidr());
+    if (!currentSubnet) break;
+    results.push(`${currentSubnet.toString()}`);
+    if (!currentSubnet.next().isValid()) break;
+    if (currentSubnet.addr.greaterThan(lastAggAddr)) break;
+    currentSubnet.setCIDR(agg.cidr());
   }
   return results;
 }
@@ -111,18 +99,8 @@ export function findUnusedSubnets(aggregate: string, subnets: string[], strict?:
  * @returns The parsed IP address or null in case of error
  */
 export function ip(address: string, throwErrors?: boolean) {
-  address = address.trim();
-  if (shared.hasColon(address)) {
-    address = shared.removeBrackets(address);
-  }
-  const ip = shared.removeCIDR(address, throwErrors);
-  if (ip !== null) {
-    const bytes = shared.addrToBytes(ip, throwErrors);
-    if (bytes !== null) {
-      return shared.bytesToAddr(bytes, throwErrors);
-    }
-  }
-  return null;
+  const addr = new Address(address, throwErrors).toString();
+  return addr.length > 0 ? addr : null;
 }
 
 /**
@@ -137,20 +115,8 @@ export function ip(address: string, throwErrors?: boolean) {
  * @returns The parsed network address or null in case of error
  */
 export function network(networkAddress: string, throwErrors?: boolean) {
-  networkAddress = networkAddress.trim();
-  if (shared.hasColon(networkAddress)) {
-    networkAddress = shared.removeBrackets(networkAddress);
-  }
-  const ip = shared.removeCIDR(networkAddress, throwErrors);
-  const cidr = shared.getCIDR(networkAddress, throwErrors);
-  if (ip !== null && cidr !== null) {
-    const bytes = shared.addrToBytes(ip, throwErrors);
-    if (bytes !== null) {
-      const addr = shared.bytesToAddr(bytes, throwErrors);
-      if (addr) return `${addr}/${cidr}`;
-    }
-  }
-  return null;
+  const net = new Network(networkAddress, throwErrors).toString();
+  return net.length > 0 ? net : null;
 }
 
 /**
@@ -168,17 +134,17 @@ export function network(networkAddress: string, throwErrors?: boolean) {
  * @returns A boolean or null in case of error
  */
 export function networkComesBefore(network: string, otherNetwork: string, strict?: boolean, throwErrors?: boolean) {
-  const net = shared.parseNetworkString(network, strict, throwErrors);
-  if (!net) return null;
-  const otherNet = shared.parseNetworkString(otherNetwork, strict, throwErrors);
-  if (!otherNet) return null;
-  switch (shared.compareAddresses(net.bytes, otherNet.bytes)) {
-    case shared.Pos.before:
+  const alphaNet = shared.parseBaseNetwork(network, strict, throwErrors);
+  if (!alphaNet || !alphaNet.isValid()) return null;
+  const bravoNet = shared.parseBaseNetwork(otherNetwork, strict, throwErrors);
+  if (!bravoNet || !bravoNet.isValid()) return null;
+  switch (alphaNet.compare(bravoNet)) {
+    case BEFORE:
       return true;
-    case shared.Pos.after:
+    case AFTER:
       return false;
   }
-  if (net.cidr < otherNet.cidr) return true;
+  if (alphaNet.cidr() < bravoNet.cidr()) return true;
   return false;
 }
 
@@ -196,11 +162,15 @@ export function networkComesBefore(network: string, otherNetwork: string, strict
  * @returns A boolean or null in case of error
  */
 export function networkContainsAddress(network: string, address: string, strict?: boolean, throwErrors?: boolean) {
-  const net = shared.parseNetworkString(network, strict, throwErrors);
-  if (!net) return null;
-  const addr = shared.parseAddressString(address, throwErrors);
-  if (!addr) return null;
-  return shared.networkContainsAddress(net, addr);
+  const net = shared.parseBaseNetwork(network, strict, throwErrors);
+  if (!net || !net.isValid()) return null;
+  const addrNet = new Network(address, throwErrors);
+  if (!addrNet.isValid()) return null;
+  if (addrNet.cidr() !== addrNet.addr.bytes().length * 8) {
+    if (throwErrors) throw errors.InvalidAddress;
+    return null;
+  }
+  return net.contains(addrNet);
 }
 
 /**
@@ -217,11 +187,11 @@ export function networkContainsAddress(network: string, address: string, strict?
  * @returns A boolean or null in case of error
  */
 export function networkContainsSubnet(network: string, subnet: string, strict?: boolean, throwErrors?: boolean) {
-  const alphaNet = shared.parseNetworkString(network, strict, throwErrors);
+  const alphaNet = shared.parseBaseNetwork(network, strict, throwErrors);
   if (!alphaNet) return null;
-  const bravoNet = shared.parseNetworkString(subnet, strict, throwErrors);
+  const bravoNet = shared.parseBaseNetwork(subnet, strict, throwErrors);
   if (!bravoNet) return null;
-  return shared.networkContainsSubnet(alphaNet, bravoNet);
+  return alphaNet.contains(bravoNet);
 }
 
 /**
@@ -238,11 +208,11 @@ export function networkContainsSubnet(network: string, subnet: string, strict?: 
  * @returns A boolean or null in case of error
  */
 export function networksIntersect(network: string, otherNetwork: string, strict?: boolean, throwErrors?: boolean) {
-  const alphaNet = shared.parseNetworkString(network, strict, throwErrors);
+  const alphaNet = shared.parseBaseNetwork(network, strict, throwErrors);
   if (!alphaNet) return null;
-  const bravoNet = shared.parseNetworkString(otherNetwork, strict, throwErrors);
+  const bravoNet = shared.parseBaseNetwork(otherNetwork, strict, throwErrors);
   if (!bravoNet) return null;
-  return shared.networksIntersect(alphaNet, bravoNet, throwErrors);
+  return alphaNet.intersects(bravoNet);
 }
 
 /**
@@ -257,12 +227,13 @@ export function networksIntersect(network: string, otherNetwork: string, strict?
  * @returns An address string or null in case of error
  */
 export function nextAddress(address: string, throwErrors?: boolean) {
-  const bytes = shared.parseAddressString(address, throwErrors);
-  if (!bytes) return null;
-  if (!shared.increaseAddressWithCIDR(bytes, bytes.length * 8, throwErrors)) return null;
-  const addr = shared.bytesToAddr(bytes, throwErrors);
-  if (!addr) return null;
-  return `${addr}`;
+  const addr = new Address(address, throwErrors);
+  if (!addr.isValid()) return null;
+  if (!addr.next().isValid()) {
+    if (throwErrors) throw errors.OverflowedAddressSpace;
+    return null;
+  }
+  return addr.toString();
 }
 
 /**
@@ -278,12 +249,13 @@ export function nextAddress(address: string, throwErrors?: boolean) {
  * @returns A network string or null in case of error
  */
 export function nextNetwork(network: string, strict?: boolean, throwErrors?: boolean) {
-  const net = shared.parseNetworkString(network, strict, throwErrors);
-  if (!net) return null;
-  if (!shared.increaseAddressWithCIDR(net.bytes, net.cidr, throwErrors)) return null;
-  const addr = shared.bytesToAddr(net.bytes, throwErrors);
-  if (!addr) return null;
-  return `${addr}/${net.cidr}`;
+  const net = shared.parseBaseNetwork(network, strict, throwErrors);
+  if (!net || !net.isValid()) return null;
+  if (!net.next().isValid()) {
+    if (throwErrors) throw errors.OverflowedAddressSpace;
+    return null;
+  }
+  return net.toString();
 }
 
 /**
@@ -299,30 +271,30 @@ export function nextNetwork(network: string, strict?: boolean, throwErrors?: boo
  * @returns An array of networks or null in case of error
  */
 export function rangeOfNetworks(startAddress: string, stopAddress: string, throwErrors?: boolean) {
-  let startAddr = shared.parseAddressString(startAddress, throwErrors);
+  let startAddr = new Address(startAddress, throwErrors);
   if (!startAddr) return null;
-  let stopAddr = shared.parseAddressString(stopAddress, throwErrors);
+
+  let stopAddr = new Address(stopAddress, throwErrors);
   if (!stopAddr) return null;
-  if (startAddr.length !== stopAddr.length) {
+
+  if (startAddr.bytes().length !== stopAddr.bytes().length) {
     if (throwErrors) throw errors.MixingIPv4AndIPv6;
     return null;
   }
-  switch (shared.compareAddresses(startAddr, stopAddr)) {
-    case shared.Pos.equals:
-      return [`${startAddress}/${startAddr.length * 8}`];
-    case shared.Pos.after:
+  switch (startAddr.compare(stopAddr)) {
+    case EQUALS:
+      return [`${startAddress}/${startAddr.bytes().length * 8}`];
+    case AFTER:
       [startAddr, stopAddr] = [stopAddr, startAddr];
   }
   var results = [] as string[];
-  const net = { bytes: startAddr, cidr: 1 };
-  while (shared.compareAddresses(net.bytes, stopAddr) <= 0) {
-    while (!shared.isValidNetworkAddress(net) || shared.networkGoesPastAddress(net, stopAddr)) {
-      net.cidr++;
+  const net = new Network().from(startAddr, 1);
+  while (net.addr.lessThanOrEqual(stopAddr)) {
+    while (!net.addr.isBaseAddress(net.cidr()) || net.lastAddr().greaterThan(stopAddr)) {
+      net.setCIDR(net.cidr() + 1);
     }
-    const addr = shared.bytesToAddr(net.bytes, throwErrors);
-    results.push(`${addr}/${net.cidr}`);
-    shared.increaseAddressWithCIDR(net.bytes, net.cidr, throwErrors);
-    net.cidr = 1;
+    results.push(net.toString());
+    net.next().setCIDR(1);
   }
   return results;
 }
@@ -339,15 +311,14 @@ export function rangeOfNetworks(startAddress: string, stopAddress: string, throw
  * @returns An array of networks or null in case of error
  */
 export function sort(networkAddresses: string[], throwErrors?: boolean) {
-  let subnets = new Array(networkAddresses.length) as shared.Network[];
+  let subnets = new Array(networkAddresses.length) as Network[];
   let foundCIDR = false;
   for (let i = 0; i < networkAddresses.length; i++) {
-    const netString = networkAddresses[i];
-    const addr = shared.parseAddressString(netString, throwErrors);
+    const addr = new Address(networkAddresses[i], throwErrors);
     if (!addr) return null;
-    let cidr = shared.getCIDR(netString);
+    let cidr = shared.getCIDR(networkAddresses[i]);
     if (!cidr) {
-      if (addr.length == 4) {
+      if (addr.bytes().length == 4) {
         cidr = 32;
       } else {
         cidr = 128;
@@ -355,14 +326,16 @@ export function sort(networkAddresses: string[], throwErrors?: boolean) {
     } else {
       foundCIDR = true;
     }
-    subnets[i] = { bytes: addr, cidr: cidr };
+    subnets[i] = new Network().from(addr, cidr);
   }
-  shared.sortNetworks(subnets);
+  subnets = shared.sortNetworks(subnets);
   const results = new Array(subnets.length) as string[];
   for (let i = 0; i < subnets.length; i++) {
-    let s = shared.bytesToAddr(subnets[i].bytes, throwErrors);
-    if (!s) return null;
-    results[i] = foundCIDR ? `${s}/${subnets[i].cidr}` : `${s}`;
+    if (foundCIDR) {
+      results[i] = subnets[i].toString();
+    } else {
+      results[i] = subnets[i].addr.toString();
+    }
   }
   return results;
 }
@@ -380,28 +353,23 @@ export function sort(networkAddresses: string[], throwErrors?: boolean) {
  * @returns An array of networks or null in case of error
  */
 export function summarize(networks: string[], strict?: boolean, throwErrors?: boolean) {
-  let subnets = [] as shared.Network[];
+  let subnets = [] as Network[];
   for (let i = 0; i < networks.length; i++) {
-    const netString = networks[i];
-    let net = shared.parseNetworkString(netString, strict, false);
-    if (!net) {
-      const addr = shared.parseAddressString(netString, throwErrors);
-      if (!addr) return null;
-      if (addr.length == 4) {
-        net = { bytes: addr, cidr: 32 };
-      } else {
-        net = { bytes: addr, cidr: 128 };
+    const net = shared.parseBaseNetwork(networks[i], strict, false);
+    if (net) {
+      if (net.isValid()) {
+        subnets.push(net);
       }
+    } else if (strict) {
+      if (throwErrors) throw errors.NotValidBaseNetworkAddress;
+      return null;
     }
-    subnets.push(net);
   }
-  shared.sortNetworks(subnets);
+  subnets = shared.sortNetworks(subnets);
   subnets = shared.summarizeSortedNetworks(subnets);
   const results = new Array(subnets.length) as string[];
   for (let i = 0; i < subnets.length; i++) {
-    let s = shared.bytesToAddr(subnets[i].bytes, throwErrors);
-    if (!s) return null;
-    results[i] = `${s}/${subnets[i].cidr}`;
+    results[i] = subnets[i].toString();
   }
   return results;
 }
@@ -411,6 +379,7 @@ module.exports = {
   broadcastAddress,
   findUnusedSubnets,
   ip,
+  Matcher,
   network,
   networkComesBefore,
   networkContainsAddress,
@@ -422,8 +391,3 @@ module.exports = {
   sort,
   summarize
 };
-
-// The following functions are pending an implementation:
-
-// IPv4ClassfulNetwork() eithers return the classful network given an IPv4 address or
-// returns nil if given a multicast address or IPv6 address

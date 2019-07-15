@@ -1,83 +1,10 @@
-import * as shared from "./shared";
 import * as errors from "./errors";
 import * as weight from "./weight";
+import { Network } from "./network";
+import { Address } from "./address";
 
-function padZeros(addr: string, throwErrors?: boolean) {
-  if (addr.length >= 2) {
-    if (addr.slice(0, 2) === "::") {
-      addr = "0" + addr;
-    }
-    if (addr.slice(addr.length - 2) === "::") {
-      addr += "0";
-    }
-  }
-  const splitAddr = addr.split("::");
-  if (splitAddr.length === 1) {
-    return addr;
-  } else if (splitAddr.length === 2) {
-    const hextetCount = splitAddr[0].split(":").length + splitAddr[1].split(":").length;
-    splitAddr[0] += shared.repeatString(":0", 8 - hextetCount);
-    return splitAddr.join(":");
-  }
-  if (throwErrors) throw errors.GenericPadZeros;
-  return null;
-}
-
-// Network-Specific Prefix   IPv4          IPv4-embedded IPv6 address
-// 2001:db8:122:344::/96     192.0.2.33    2001:db8:122:344::192.0.2.33
-// https://tools.ietf.org/html/rfc6052
-
-export function convertEmbeddedIPv4(addr: string) {
-  let hextets = addr.split(":");
-  const octets = hextets[hextets.length - 1].split(".");
-  if (octets.length === 4) {
-    const a = parseInt(octets[0], 10).toString(16);
-    const b = parseInt(octets[1], 10).toString(16);
-    const c = parseInt(octets[2], 10).toString(16);
-    const d = parseInt(octets[3], 10).toString(16);
-    hextets = hextets.slice(0, hextets.length - 1);
-    hextets.push(parseInt(a + b, 16).toString(16));
-    hextets.push(parseInt(c + d, 16).toString(16));
-    addr = hextets.join(":");
-  }
-  return addr;
-}
-
-export function addrToBytes(addr: string, throwErrors?: boolean) {
-  const padded = padZeros(addr);
-  if (padded !== null) {
-    const hextets = padded.split(":");
-    if (hextets.length === 8) {
-      const arr = new Uint8Array(16);
-      for (var j = 0; j < 8; j++) {
-        const hextet = hextets[j];
-        switch (hextet.length) {
-          case 1:
-          case 2:
-            arr[2 * j] = 0;
-            arr[2 * j + 1] = parseInt(hextet, 16);
-            break;
-          case 3:
-          case 4:
-            const val = parseInt(hextet, 16);
-            arr[2 * j] = Math.floor(val / 256);
-            arr[2 * j + 1] = val % 256;
-            break;
-          default:
-            if (throwErrors) throw errors.GenericAddrToBytes;
-            return null;
-        }
-      }
-      return arr;
-    }
-  }
-  if (throwErrors) throw errors.GenericAddrToBytes;
-  return null;
-}
-
-function findLongestZeroHextetChain(bytes: Uint8Array, throwErrors?: boolean) {
-  if (bytes.length >= 16) {
-    bytes = bytes.subarray(bytes.length - 16);
+function findLongestZeroHextetChain(bytes: number[], throwErrors?: boolean) {
+  if (bytes.length === 16) {
     const canidate = { start: 0, length: 0 };
     const longest = { start: 0, length: 0 };
     for (var i = 0; i < bytes.length; i += 2) {
@@ -101,7 +28,7 @@ function findLongestZeroHextetChain(bytes: Uint8Array, throwErrors?: boolean) {
   return null;
 }
 
-export function bytesToAddr(bytes: Uint8Array, throwErrors?: boolean) {
+export function bytesToAddr(bytes: number[], throwErrors?: boolean) {
   const longestHextetChain = findLongestZeroHextetChain(bytes, throwErrors);
   if (longestHextetChain !== null) {
     var result = "";
@@ -121,14 +48,14 @@ export function bytesToAddr(bytes: Uint8Array, throwErrors?: boolean) {
 }
 
 export function randomAddress() {
-  return bytesToAddr(Uint8Array.from(Array(16), () => Math.random() * 255));
+  return bytesToAddr(Array.from(Array(16), () => Math.floor(Math.random() * 256)));
 }
 
 const choices = Array.from(Array(127), (_, idx) => new weight.WeightedValue(Math.pow(2, idx), idx + 1));
 
 export function randomNetwork() {
-  const bytes = Uint8Array.from(Array(16), () => Math.random() * 255);
+  const bytes = Array.from(Array(16), () => Math.floor(Math.random() * 256));
+  const addr = new Address().setBytes(bytes);
   const cidr = weight.getValue(choices) as number;
-  shared.applySubnetMask(bytes, cidr);
-  return `${bytesToAddr(bytes)}/${cidr}`;
+  return new Network().from(addr, cidr);
 }
