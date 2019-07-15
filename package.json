@@ -91,6 +91,7 @@
     "ip-address": "^5.9.2",
     "ipaddr.js": "^1.9.0",
     "jest": "^24.8.0",
+    "lodash": "^4.17.14",
     "netmask": "^1.0.6",
     "prettier": "^1.18.2",
     "ts-jest": "^24.0.2",
