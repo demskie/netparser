@@ -255,14 +255,17 @@ export class Address {
     if (this.isValid() && targetByte >= 0 && targetByte < this.arr.length) {
       var increment = Math.pow(2, 8 - (cidr - targetByte * 8));
       this.arr[targetByte] += increment * (forwards ? 1 : -1);
-      if (this.arr[targetByte] < 0 || this.arr[targetByte] > 255) {
-        if (targetByte > 0) {
+      if (targetByte >= 0) {
+        if (this.arr[targetByte] < 0) {
+          this.arr[targetByte] = 256 + (this.arr[targetByte] % 256);
+          this.offsetAddress(targetByte * 8, forwards, throwErrors);
+        } else if (this.arr[targetByte] > 255) {
           this.arr[targetByte] %= 256;
           this.offsetAddress(targetByte * 8, forwards, throwErrors);
-        } else {
-          if (throwErrors) throw errors.OverflowedAddressSpace;
-          this.destroy();
         }
+      } else {
+        if (throwErrors) throw errors.OverflowedAddressSpace;
+        this.destroy();
       }
     } else {
       if (throwErrors) throw errors.GenericOffsetAddressWithCIDR;

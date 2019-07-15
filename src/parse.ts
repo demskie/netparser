@@ -82,6 +82,67 @@ export function v4AddrToBytes(old: string) {
   return null;
 }
 
+function parseHextet(s: string) {
+  if (s.trim().length < 1 || s.trim().length > 4) return Number.NaN;
+  var val = 0;
+  for (var i = 0; i < s.length; i++) {
+    if (i >= 4) return Number.NaN;
+    var p = 4 * (s.length - i - 1);
+    switch (s[i]) {
+      case "0":
+        break;
+      case "1":
+        val += 1 * Math.pow(2, p);
+        break;
+      case "2":
+        val += 2 * Math.pow(2, p);
+        break;
+      case "3":
+        val += 3 * Math.pow(2, p);
+        break;
+      case "4":
+        val += 4 * Math.pow(2, p);
+        break;
+      case "5":
+        val += 5 * Math.pow(2, p);
+        break;
+      case "6":
+        val += 6 * Math.pow(2, p);
+        break;
+      case "7":
+        val += 7 * Math.pow(2, p);
+        break;
+      case "8":
+        val += 8 * Math.pow(2, p);
+        break;
+      case "9":
+        val += 9 * Math.pow(2, p);
+        break;
+      case "a":
+        val += 10 * Math.pow(2, p);
+        break;
+      case "b":
+        val += 11 * Math.pow(2, p);
+        break;
+      case "c":
+        val += 12 * Math.pow(2, p);
+        break;
+      case "d":
+        val += 13 * Math.pow(2, p);
+        break;
+      case "e":
+        val += 14 * Math.pow(2, p);
+        break;
+      case "f":
+        val += 15 * Math.pow(2, p);
+        break;
+      default:
+        return Number.NaN;
+    }
+  }
+  return val;
+}
+
 /* 
   https://tools.ietf.org/html/rfc3986
     ffff:fc00::1:1234/64
@@ -105,29 +166,11 @@ export function v6AddrToBytes(old: string) {
   if (old === "::") return bytes;
   var halves = old.split("::");
   if (halves.length === 0 || halves.length > 2) return null;
-  var leftByteIndex = 0;
-  if (halves[0] !== "") {
-    var leftParts = halves[0].split(":");
-    for (var i = 0; i < leftParts.length; i++) {
-      if (leftByteIndex >= 16) return bytes;
-      var x = parseInt(leftParts[i], 16);
-      if (Number.isNaN(x)) {
-        var ipv4Parts = leftParts[i].split(".");
-        if (ipv4Parts.length !== 4) return null;
-        for (var j = 0; j < ipv4Parts.length; j++) {
-          x = parseInt(ipv4Parts[j], 10);
-          if (Number.isNaN(x) || x < 0 || x > 255) return null;
-          bytes[leftByteIndex++] = x;
-        }
-        continue;
-      }
-      if (x < 0 || x > 65535) return null;
-      bytes[leftByteIndex++] = Math.floor(x / 256);
-      bytes[leftByteIndex++] = Math.floor(x % 256);
-    }
-  }
-  if (halves.length === 2 && halves[1] !== "") {
-    return parseRightHalf(bytes, leftByteIndex, halves[1].split(":"));
+  var leftByteIndex = parseLeftHalf(bytes, halves[0]);
+  if (leftByteIndex === null) return null;
+  if (halves.length === 2) {
+    var rightByteIndex = parseRightHalf(bytes, halves[1], leftByteIndex);
+    if (rightByteIndex === null) return null;
   }
   return bytes;
 }
@@ -141,24 +184,60 @@ function removeBrackets(s: string) {
   return s.substring(1);
 }
 
-function parseRightHalf(bytes: number[], leftByteIndex: number, rightParts: string[]) {
-  var rightByteIndex = 15;
-  for (var i = rightParts.length - 1; i >= 0; i--) {
-    if (leftByteIndex > rightByteIndex) return null;
-    var x = parseInt(rightParts[i], 16);
-    if (Number.isNaN(x)) {
-      var ipv4Parts = rightParts[i].split(".");
-      if (ipv4Parts.length !== 4) return null;
-      for (var j = ipv4Parts.length - 1; j >= 0; j--) {
-        x = parseInt(ipv4Parts[j], 10);
-        if (Number.isNaN(x) || x < 0 || x > 255) return null;
-        bytes[rightByteIndex--] = x;
+function parseLeftHalf(bytes: number[], leftHalf: string) {
+  var leftByteIndex = 0;
+  if (leftHalf !== "") {
+    var leftParts = leftHalf.split(":");
+    for (var i = 0; i < leftParts.length; i++) {
+      if (leftByteIndex >= 16) return null;
+      var ipv4Parts = leftParts[i].split(".");
+      if (ipv4Parts.length === 0) return null;
+      if (ipv4Parts.length !== 4) {
+        var x = parseHextet(leftParts[i]);
+        if (Number.isNaN(x) || x < 0 || x > 65535) return null;
+        bytes[leftByteIndex++] = Math.floor(x / 256);
+        bytes[leftByteIndex++] = Math.floor(x % 256);
+      } else {
+        for (var j = 0; j < ipv4Parts.length; j++) {
+          var x = Number(ipv4Parts[j]);
+          if (Number.isNaN(x) || x < 0 || x > 255) return null;
+          bytes[leftByteIndex++] = x;
+        }
       }
-      continue;
     }
-    if (x < 0 || x > 65535) return null;
-    bytes[rightByteIndex--] = Math.floor(x % 256);
-    bytes[rightByteIndex--] = Math.floor(x / 256);
   }
-  return bytes;
+  return leftByteIndex;
+}
+
+function removePortInfo(s: string) {
+  return s.replace(/(#|p|\.).*/g, "").trim();
+}
+
+function parseRightHalf(bytes: number[], rightHalf: string, leftByteIndex: number) {
+  var rightByteIndex = 15;
+  if (rightHalf !== "") {
+    var rightParts = rightHalf.split(":");
+    for (var i = rightParts.length - 1; i >= 0; i--) {
+      if (rightParts[i].trim() === "") return null;
+      if (leftByteIndex > rightByteIndex) return null;
+      var ipv4Parts = rightParts[i].split(".");
+      if (ipv4Parts.length === 0) return null;
+      if (ipv4Parts.length !== 4) {
+        if (i === rightParts.length - 1) {
+          rightParts[i] = removePortInfo(rightParts[i]);
+        }
+        var x = parseHextet(rightParts[i]);
+        if (Number.isNaN(x) || x < 0 || x > 65535) return null;
+        bytes[rightByteIndex--] = Math.floor(x % 256);
+        bytes[rightByteIndex--] = Math.floor(x / 256);
+      } else {
+        for (var j = ipv4Parts.length - 1; j >= 0; j--) {
+          var x = Number(ipv4Parts[j]);
+          if (Number.isNaN(x) || x < 0 || x > 255) return null;
+          bytes[rightByteIndex--] = x;
+        }
+      }
+    }
+  }
+  return rightByteIndex;
 }
