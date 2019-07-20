@@ -1,6 +1,30 @@
 import * as sort from "../sort";
 import * as ipv4 from "../ipv6";
 import { Network } from "../network";
+import { sortBy } from "lodash";
+
+export function nativeSort(networks: Network[]) {
+  return sortBy(networks, [
+    o => o.addr.bytes().length,
+    o => (o.addr.bytes()[0] ? o.addr.bytes()[0] : 0),
+    o => (o.addr.bytes()[1] ? o.addr.bytes()[1] : 0),
+    o => (o.addr.bytes()[2] ? o.addr.bytes()[2] : 0),
+    o => (o.addr.bytes()[3] ? o.addr.bytes()[3] : 0),
+    o => (o.addr.bytes()[4] ? o.addr.bytes()[4] : 0),
+    o => (o.addr.bytes()[5] ? o.addr.bytes()[5] : 0),
+    o => (o.addr.bytes()[6] ? o.addr.bytes()[6] : 0),
+    o => (o.addr.bytes()[7] ? o.addr.bytes()[7] : 0),
+    o => (o.addr.bytes()[8] ? o.addr.bytes()[8] : 0),
+    o => (o.addr.bytes()[9] ? o.addr.bytes()[9] : 0),
+    o => (o.addr.bytes()[10] ? o.addr.bytes()[10] : 0),
+    o => (o.addr.bytes()[11] ? o.addr.bytes()[11] : 0),
+    o => (o.addr.bytes()[12] ? o.addr.bytes()[12] : 0),
+    o => (o.addr.bytes()[13] ? o.addr.bytes()[13] : 0),
+    o => (o.addr.bytes()[14] ? o.addr.bytes()[14] : 0),
+    o => (o.addr.bytes()[15] ? o.addr.bytes()[15] : 0),
+    o => o.cidr()
+  ]);
+}
 
 test("sanity check binarySearchForInsertionIndex #1", () => {
   const inputNetwork = new Network("192.168.0.122/32");
@@ -101,7 +125,7 @@ test("cross check all sorting methods", () => {
 
   const sortedAlpha = sort.insertionSort(alpha);
   const sortedBravo = sort.radixSort(bravo);
-  const sortedCharlie = sort.nativeSort(charlie);
+  const sortedCharlie = nativeSort(charlie);
 
   const sortedAlphaStrings = Array.from(sortedAlpha, (net: Network) => net.toString());
   const sortedBravoStrings = Array.from(sortedBravo, (net: Network) => net.toString());
@@ -109,10 +133,4 @@ test("cross check all sorting methods", () => {
 
   expect(sortedAlphaStrings).toEqual(sortedBravoStrings);
   expect(sortedAlphaStrings).toEqual(sortedCharlieStrings);
-});
-
-test("tshoot msd sorting efficiency", () => {
-  sort.stats.clear();
-  sort.radixSort([new Network("192.168.0.0/32"), new Network("192.168.0.1/32"), new Network("208.44.62.1/23")]);
-  // throw new Error(JSON.stringify([...sort.stats]));
 });

@@ -20,7 +20,7 @@ export function sortNetworks(networks: Network[]) {
   if (networks.length < 10000) {
     return sort.insertionSort(networks);
   }
-  return sort.nativeSort(networks);
+  return sort.radixSort(networks);
 }
 
 export function summarizeSortedNetworks(sorted: Network[]) {

@@ -1,32 +1,8 @@
 import { Network } from "./network";
-import { sortBy } from "lodash";
 
 const BEFORE = -1;
 const EQUALS = 0;
 const AFTER = 1;
-
-export function nativeSort(networks: Network[]) {
-  return sortBy(networks, [
-    o => o.addr.bytes().length,
-    o => (o.addr.bytes()[0] ? o.addr.bytes()[0] : 0),
-    o => (o.addr.bytes()[1] ? o.addr.bytes()[1] : 0),
-    o => (o.addr.bytes()[2] ? o.addr.bytes()[2] : 0),
-    o => (o.addr.bytes()[3] ? o.addr.bytes()[3] : 0),
-    o => (o.addr.bytes()[4] ? o.addr.bytes()[4] : 0),
-    o => (o.addr.bytes()[5] ? o.addr.bytes()[5] : 0),
-    o => (o.addr.bytes()[6] ? o.addr.bytes()[6] : 0),
-    o => (o.addr.bytes()[7] ? o.addr.bytes()[7] : 0),
-    o => (o.addr.bytes()[8] ? o.addr.bytes()[8] : 0),
-    o => (o.addr.bytes()[9] ? o.addr.bytes()[9] : 0),
-    o => (o.addr.bytes()[10] ? o.addr.bytes()[10] : 0),
-    o => (o.addr.bytes()[11] ? o.addr.bytes()[11] : 0),
-    o => (o.addr.bytes()[12] ? o.addr.bytes()[12] : 0),
-    o => (o.addr.bytes()[13] ? o.addr.bytes()[13] : 0),
-    o => (o.addr.bytes()[14] ? o.addr.bytes()[14] : 0),
-    o => (o.addr.bytes()[15] ? o.addr.bytes()[15] : 0),
-    o => o.cidr()
-  ]);
-}
 
 export function binarySearchForInsertionIndex(network: Network, sortedNetworks: Network[]) {
   if (!sortedNetworks || sortedNetworks.length === 0) return 0;
@@ -58,12 +34,8 @@ export function insertionSort(networks: Network[]) {
   return sorted;
 }
 
-export const stats = new Map() as Map<number, number>;
-
 function msdRadixSort(networks: Network[], start: number, stop: number, byteIndex: number) {
-  if (start + 1 >= stop) return;
-  var x = stats.get(byteIndex);
-  stats.set(byteIndex, x ? x + 1 : 1);
+  if (start >= stop - 1) return;
   const runningPrefixSum = new Array(256) as number[];
   const offsetPrefixSum = new Array(256) as number[];
   const counts = runningPrefixSum;
