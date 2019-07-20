@@ -110,3 +110,9 @@ test("cross check all sorting methods", () => {
   expect(sortedAlphaStrings).toEqual(sortedBravoStrings);
   expect(sortedAlphaStrings).toEqual(sortedCharlieStrings);
 });
+
+test("tshoot msd sorting efficiency", () => {
+  sort.stats.clear();
+  sort.radixSort([new Network("192.168.0.0/32"), new Network("192.168.0.1/32"), new Network("208.44.62.1/23")]);
+  // throw new Error(JSON.stringify([...sort.stats]));
+});

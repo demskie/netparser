@@ -58,7 +58,12 @@ export function insertionSort(networks: Network[]) {
   return sorted;
 }
 
+export const stats = new Map() as Map<number, number>;
+
 function msdRadixSort(networks: Network[], start: number, stop: number, byteIndex: number) {
+  if (start + 1 >= stop) return;
+  var x = stats.get(byteIndex);
+  stats.set(byteIndex, x ? x + 1 : 1);
   const runningPrefixSum = new Array(256) as number[];
   const offsetPrefixSum = new Array(256) as number[];
   const counts = runningPrefixSum;
