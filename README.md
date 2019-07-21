@@ -55,11 +55,9 @@ netparser.sort(['255.255.255.255', '192.168.0.0/16', '192.168.2.3/31']);
 netparser.summarize(['192.168.1.1', '192.168.0.0/16', '192.168.2.3/31']);
 // returns ['192.168.0.0/16']
 
-let matcher = new netparser.Matcher();
-matcher.add("192.168.0.0/24");
-matcher.add("192.168.2.0/23");
-matcher.add("192.168.4.0/24");
-matcher.has("192.168.3.0"); // returns true
+var matcher = new netparser.Matcher(['192.168.0.0/24', '192.168.2.0/23', '192.168.4.0/24']);
+matcher.has('192.168.3.0');
+// returns true
 ```
 
 ## FYI
@@ -74,36 +72,36 @@ matcher.has("192.168.3.0"); // returns true
 npm run bench
 
 'index.bench.ts' output:
-        baseAddress (netparser)        x 1,775,990 ops/sec ±0.56% (89 runs sampled)
-        baseAddress (ip-address)       x 1,263,615 ops/sec ±0.74% (90 runs sampled)
-        baseAddress (ipaddr.js)        x 461,116 ops/sec ±1.15% (91 runs sampled)
-        baseAddress (netmask)          x 357,396 ops/sec ±0.58% (90 runs sampled)
-        contains (netparser)           x 880,038 ops/sec ±0.85% (93 runs sampled)
-        contains (ip-address)          x 882,368 ops/sec ±0.90% (89 runs sampled)
-        contains (ipaddr.js)           x 80,082 ops/sec ±1.44% (83 runs sampled)
-        contains (netmask)             x 314,720 ops/sec ±0.71% (93 runs sampled)
+    baseAddress (netparser)        x 1,775,990 ops/sec ±0.56% (89 runs sampled)
+    baseAddress (ip-address)       x 1,263,615 ops/sec ±0.74% (90 runs sampled)
+    baseAddress (ipaddr.js)        x 461,116 ops/sec ±1.15% (91 runs sampled)
+    baseAddress (netmask)          x 357,396 ops/sec ±0.58% (90 runs sampled)
+    contains (netparser)           x 880,038 ops/sec ±0.85% (93 runs sampled)
+    contains (ip-address)          x 882,368 ops/sec ±0.90% (89 runs sampled)
+    contains (ipaddr.js)           x 80,082 ops/sec ±1.44% (83 runs sampled)
+    contains (netmask)             x 314,720 ops/sec ±0.71% (93 runs sampled)
 
 'match.bench.ts' output:
-        create (netparser)             x 19.25 ops/sec ±3.95% (37 runs sampled)
-        create (cidr-matcher)          x 8.14 ops/sec ±3.15% (24 runs sampled)
-        create (ipaddr.js)             x 25.97 ops/sec ±7.69% (46 runs sampled)
-        query (netparser)              x 227,031 ops/sec ±5.97% (80 runs sampled)
-        query (cidr-matcher)           x 1,132 ops/sec ±1.27% (85 runs sampled)
-        query (ipaddr.js)              x 16.66 ops/sec ±1.11% (45 runs sampled)
+    create (netparser)             x 19.25 ops/sec ±3.95% (37 runs sampled)
+    create (cidr-matcher)          x 8.14 ops/sec ±3.15% (24 runs sampled)
+    create (ipaddr.js)             x 25.97 ops/sec ±7.69% (46 runs sampled)
+    query (netparser)              x 227,031 ops/sec ±5.97% (80 runs sampled)
+    query (cidr-matcher)           x 1,132 ops/sec ±1.27% (85 runs sampled)
+    query (ipaddr.js)              x 16.66 ops/sec ±1.11% (45 runs sampled)
 
 'sort.bench.ts' output:
-        sort n=100 (insertion)         x 44,834 ops/sec ±0.90% (91 runs sampled)
-        sort n=100 (radix msd)         x 29,575 ops/sec ±0.80% (92 runs sampled)
-        sort n=100 (native)            x 17,923 ops/sec ±0.59% (93 runs sampled)
-        sort n=1000 (insertion)        x 2,446 ops/sec ±0.62% (92 runs sampled)
-        sort n=1000 (radix msd)        x 1,873 ops/sec ±0.61% (84 runs sampled)
-        sort n=1000 (native)           x 1,381 ops/sec ±0.81% (87 runs sampled)
-        sort n=10000 (insertion)       x 78.20 ops/sec ±0.84% (67 runs sampled)
-        sort n=10000 (radix msd)       x 274 ops/sec ±1.15% (85 runs sampled)
-        sort n=10000 (native)          x 101 ops/sec ±0.85% (73 runs sampled)
-        sort n=100000 (insertion)      x 0.39 ops/sec ±0.58% (5 runs sampled)
-        sort n=100000 (radix msd)      x 5.55 ops/sec ±1.03% (18 runs sampled)
-        sort n=100000 (native)         x 4.81 ops/sec ±3.86% (16 runs sampled)
+    sort n=100 (insertion)         x 44,834 ops/sec ±0.90% (91 runs sampled)
+    sort n=100 (radix msd)         x 29,575 ops/sec ±0.80% (92 runs sampled)
+    sort n=100 (native)            x 17,923 ops/sec ±0.59% (93 runs sampled)
+    sort n=1000 (insertion)        x 2,446 ops/sec ±0.62% (92 runs sampled)
+    sort n=1000 (radix msd)        x 1,873 ops/sec ±0.61% (84 runs sampled)
+    sort n=1000 (native)           x 1,381 ops/sec ±0.81% (87 runs sampled)
+    sort n=10000 (insertion)       x 78.20 ops/sec ±0.84% (67 runs sampled)
+    sort n=10000 (radix msd)       x 274 ops/sec ±1.15% (85 runs sampled)
+    sort n=10000 (native)          x 101 ops/sec ±0.85% (73 runs sampled)
+    sort n=100000 (insertion)      x 0.39 ops/sec ±0.58% (5 runs sampled)
+    sort n=100000 (radix msd)      x 5.55 ops/sec ±1.03% (18 runs sampled)
+    sort n=100000 (native)         x 4.81 ops/sec ±3.86% (16 runs sampled)
 ```
 
 ## API
