@@ -128,8 +128,6 @@ function msdRadixSort(networks: Network[], start: number, stop: number, byteInde
 }
 
 export function radixSort(networks: Network[]) {
-  if (networks.length > 0) {
-    msdRadixSort(networks, 0, networks.length, -1);
-  }
+  msdRadixSort(networks, 0, networks.length, -1);
   return networks;
 }
