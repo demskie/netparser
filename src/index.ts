@@ -277,13 +277,13 @@ export function rangeOfNetworks(startAddress: string, stopAddress: string, throw
       [startAddr, stopAddr] = [stopAddr, startAddr];
   }
   var results = [] as string[];
-  const net = new Network().from(startAddr, 1);
+  const net = new Network().from(startAddr, 0);
   while (net.addr.lessThanOrEqual(stopAddr)) {
     while (!net.addr.isBaseAddress(net.cidr()) || net.lastAddr().greaterThan(stopAddr)) {
       net.setCIDR(net.cidr() + 1);
     }
     results.push(net.toString());
-    net.next().setCIDR(1);
+    net.next().setCIDR(0);
   }
   return results;
 }

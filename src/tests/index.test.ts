@@ -286,6 +286,11 @@ test("sanity check rangeOfNetworks #7", () => {
   expect(output).toEqual(null);
 });
 
+test("sanity check rangeOfNetworks #8", () => {
+  const output = index.rangeOfNetworks("0.0.0.0", "255.255.255.255");
+  expect(output).toEqual(["0.0.0.0/0"]);
+});
+
 test("sanity check sort #1", () => {
   const input = ["3.0.0.0", "6.0.0.0", "2.0.0.0", "7.0.0.0", "7.0.0.0", "4.0.0.0", "0.0.0.0", "6.0.0.0", "0.0.0.0"];
   const output = index.sort(input, true);
