@@ -26,7 +26,7 @@ test("sanity check broadcastAddress #2", () => {
 });
 
 test("sanity check findUnusedSubnets #1", () => {
-  const output = index.findUnusedSubnets("192.168.0.0/22", ["192.168.1.0/24", "192.168.2.32/30"], true, true);
+  const output = index.findUnusedSubnets("192.168.0.0/22", ["192.168.2.32/30", "192.168.1.0/24"], true, true);
   expect(output).toEqual([
     "192.168.0.0/24",
     "192.168.2.0/27",
@@ -47,6 +47,42 @@ test("sanity check findUnusedSubnets #2", () => {
 test("sanity check findUnusedSubnets #3", () => {
   const output = index.findUnusedSubnets("foobar", ["foo", "bar"]);
   expect(output).toEqual(null);
+});
+
+test("sanity check findUnusedSubnets #4", () => {
+  const output = index.findUnusedSubnets("192.168.0.0/24", ["192.168.0.0/25", "192.168.0.128/26"], true, true);
+  expect(output).toEqual(["192.168.0.192/26"]);
+});
+
+test("sanity check findUnusedSubnets #5", () => {
+  const output = index.findUnusedSubnets("0.0.0.0/0", ["192.168.0.0/25", "192.168.0.128/26"], true, true);
+  expect(output).toEqual([
+    "0.0.0.0/1",
+    "128.0.0.0/2",
+    "192.0.0.0/9",
+    "192.128.0.0/11",
+    "192.160.0.0/13",
+    "192.168.0.192/26",
+    "192.168.1.0/24",
+    "192.168.2.0/23",
+    "192.168.4.0/22",
+    "192.168.8.0/21",
+    "192.168.16.0/20",
+    "192.168.32.0/19",
+    "192.168.64.0/18",
+    "192.168.128.0/17",
+    "192.169.0.0/16",
+    "192.170.0.0/15",
+    "192.172.0.0/14",
+    "192.176.0.0/12",
+    "192.192.0.0/10",
+    "193.0.0.0/8",
+    "194.0.0.0/7",
+    "196.0.0.0/6",
+    "200.0.0.0/5",
+    "208.0.0.0/4",
+    "224.0.0.0/3"
+  ]);
 });
 
 test("sanity check ip parsing #1", () => {
