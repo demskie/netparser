@@ -1,7 +1,6 @@
 import * as sort from "./sort";
 import * as errors from "./errors";
 import { Network } from "./network";
-import { Address } from "./address";
 
 export function getCIDR(s: string, throwErrors?: boolean) {
   const splitAddr = s.split("/");
@@ -47,32 +46,35 @@ export function summarizeSortedNetworks(sorted: Network[]) {
   return summarized;
 }
 
-export function findNetworkIntersection(network: Network, otherNetworks: Network[]) {
-  for (var otherNet of otherNetworks) {
-    if (network.intersects(otherNet)) {
-      return otherNet;
+export function findNetworkGaps(aggregate: Network, sortedSubnets: Network[]) {
+  let idx = 0;
+  const results = [] as Network[];
+  const canidate = aggregate.duplicate();
+  const lastAddr = aggregate.lastAddr();
+  while (canidate.addr.lessThanOrEqual(lastAddr)) {
+    // decrease network size until baseAddress is valid and fits inside aggregate
+    while (!canidate.addr.isBaseAddress(canidate.cidr()) || !aggregate.contains(canidate)) {
+      canidate.setCIDR(canidate.cidr() + 1);
+    }
+    // does this network intersect with it's nearest neighbor?
+    if (idx < sortedSubnets.length && canidate.intersects(sortedSubnets[idx])) {
+      // either shrink network or find the next address after nearest neighbor
+      if (canidate.cidr() < 8 * aggregate.addr.bytes().length) {
+        canidate.setCIDR(canidate.cidr() + 1);
+      } else {
+        let sn = sortedSubnets[idx].duplicate();
+        canidate.addr.setBytes(sn.next().addr.bytes());
+        canidate.setCIDR(aggregate.cidr());
+        idx++;
+      }
+    } else {
+      // otherwise we've found a valid entry
+      let net = canidate.duplicate();
+      results.push(net);
+      canidate.next().setCIDR(aggregate.cidr());
     }
   }
-  return null;
-}
-
-export function findNetworkWithoutIntersection(otherNetworks: Network[], position: Address, startingCIDR?: number) {
-  if (!startingCIDR) startingCIDR = 0;
-  const maxCIDR = position.bytes().length * 8;
-  const canidate = new Network().from(position, startingCIDR);
-  while (canidate.cidr() <= maxCIDR) {
-    if (canidate.addr.isBaseAddress(canidate.cidr())) {
-      if (!findNetworkIntersection(canidate, otherNetworks)) {
-        return canidate;
-      }
-      if (canidate.cidr() >= maxCIDR) {
-        if (!canidate.addr.next().isValid()) return null;
-        canidate.setCIDR(startingCIDR);
-      }
-    }
-    canidate.setCIDR(canidate.cidr() + 1);
-  }
-  return null;
+  return results;
 }
 
 export function parseBaseNetwork(s: string, strict?: boolean, throwErrors?: boolean) {

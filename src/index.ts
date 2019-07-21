@@ -49,7 +49,7 @@ export function broadcastAddress(network: string, throwErrors?: boolean) {
  * FindUnusedSubnets returns array of unused subnets given the aggregate and sibling subnets
  *
  * @example
- * netparser.findUnusedSubnets("192.168.0.0/24", ["192.168.0.0/25", "192.168.0.128/26"])  // returns ["192.168.0.224"]
+ * netparser.findUnusedSubnets("192.168.0.0/24", ["192.168.0.0/25", "192.168.0.128/26"])  // returns ["192.168.0.192/26"]
  *
  * @param aggregate - An aggregate network like 192.168.0.0/24
  * @param subnets - Array of subnetworks like ["192.168.0.0/24", "192.168.0.128/26"]
@@ -61,8 +61,7 @@ export function broadcastAddress(network: string, throwErrors?: boolean) {
 export function findUnusedSubnets(aggregate: string, subnets: string[], strict?: boolean, throwErrors?: boolean) {
   const agg = shared.parseBaseNetwork(aggregate, strict, throwErrors);
   if (!agg || !agg.isValid()) return null;
-  if (subnets.length === 0) return [`${agg.toString()}`];
-  const subnetworks = [] as Network[];
+  let subnetworks = [] as Network[];
   for (var s of subnets) {
     const net = shared.parseBaseNetwork(s, strict, throwErrors);
     if (!net || !net.isValid()) {
@@ -73,18 +72,8 @@ export function findUnusedSubnets(aggregate: string, subnets: string[], strict?:
       subnetworks.push(net);
     }
   }
-  const lastAggAddr = agg.lastAddr();
-  const results = [] as string[];
-  let currentSubnet: Network | null = agg;
-  while (currentSubnet) {
-    currentSubnet = shared.findNetworkWithoutIntersection(subnetworks, currentSubnet.addr, currentSubnet.cidr());
-    if (!currentSubnet) break;
-    results.push(`${currentSubnet.toString()}`);
-    if (!currentSubnet.next().isValid()) break;
-    if (currentSubnet.addr.greaterThan(lastAggAddr)) break;
-    currentSubnet.setCIDR(agg.cidr());
-  }
-  return results;
+  const unused = shared.findNetworkGaps(agg, shared.sortNetworks(subnetworks));
+  return Array.from(unused, (net: Network) => net.toString());
 }
 
 /**
