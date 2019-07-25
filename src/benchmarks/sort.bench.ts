@@ -46,52 +46,52 @@ const e5Charlie = Array.from(e5Alpha, (net: Network) => net.duplicate());
 
 new Benchmark.Suite("sort.bench.ts")
 
-  .add(fixedWidth("sort n=100 (insertion)", 30), () => {
-    sort.insertionSort(e2Bravo);
+  .add(fixedWidth("n=100 (insertion)", 30), () => {
+    sort.insertionSort(e2Alpha);
   })
 
-  .add(fixedWidth("sort n=100 (radix msd)", 30), () => {
-    sort.radixSort(e2Charlie);
+  .add(fixedWidth("n=100 (radix msd)", 30), () => {
+    sort.radixSort(e2Bravo);
   })
 
-  .add(fixedWidth("sort n=100 (native)", 30), () => {
-    nativeSort(e2Alpha);
+  .add(fixedWidth("n=100 (native)", 30), () => {
+    nativeSort(e2Charlie);
   })
 
-  .add(fixedWidth("sort n=1000 (insertion)", 30), () => {
-    sort.insertionSort(e3Bravo);
+  .add(fixedWidth("n=1000 (insertion)", 30), () => {
+    sort.insertionSort(e3Alpha);
   })
 
-  .add(fixedWidth("sort n=1000 (radix msd)", 30), () => {
-    sort.radixSort(e3Charlie);
+  .add(fixedWidth("n=1000 (radix msd)", 30), () => {
+    sort.radixSort(e3Bravo);
   })
 
-  .add(fixedWidth("sort n=1000 (native)", 30), () => {
-    nativeSort(e3Alpha);
+  .add(fixedWidth("n=1000 (native)", 30), () => {
+    nativeSort(e3Charlie);
   })
 
-  .add(fixedWidth("sort n=10000 (insertion)", 30), () => {
-    sort.insertionSort(e4Bravo);
+  .add(fixedWidth("n=10000 (insertion)", 30), () => {
+    sort.insertionSort(e4Alpha);
   })
 
-  .add(fixedWidth("sort n=10000 (radix msd)", 30), () => {
-    sort.radixSort(e4Charlie);
+  .add(fixedWidth("n=10000 (radix msd)", 30), () => {
+    sort.radixSort(e4Bravo);
   })
 
-  .add(fixedWidth("sort n=10000 (native)", 30), () => {
-    nativeSort(e4Alpha);
+  .add(fixedWidth("n=10000 (native)", 30), () => {
+    nativeSort(e4Charlie);
   })
 
-  .add(fixedWidth("sort n=100000 (insertion)", 30), () => {
-    sort.insertionSort(e5Bravo);
+  .add(fixedWidth("n=100000 (insertion)", 30), () => {
+    sort.insertionSort(e5Alpha);
   })
 
-  .add(fixedWidth("sort n=100000 (radix msd)", 30), () => {
-    sort.radixSort(e5Charlie);
+  .add(fixedWidth("n=100000 (radix msd)", 30), () => {
+    sort.radixSort(e5Bravo);
   })
 
-  .add(fixedWidth("sort n=100000 (native)", 30), () => {
-    nativeSort(e5Alpha);
+  .add(fixedWidth("n=100000 (native)", 30), () => {
+    nativeSort(e5Charlie);
   })
 
   .on("complete", function() {

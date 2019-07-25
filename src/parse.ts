@@ -22,7 +22,7 @@ export function network(s: string, throwErrors?: boolean) {
   }
   var bytes = isIPv4 ? v4AddrToBytes(parts[0]) : v6AddrToBytes(parts[0]);
   if (bytes === null) {
-    if (throwErrors) throw Error(`could not convert string to bytes`); //errors.GenericNetworkParse;
+    if (throwErrors) throw errors.GenericNetworkParse;
     return null;
   }
   return { bytes, cidr };
@@ -39,30 +39,12 @@ function looksLikeIPv4(s: string) {
 function parseIntRange(old: string, min: number, max: number) {
   var s = "";
   for (var i = 0; i < old.length; i++) {
-    if (!isOneDigit(old[i])) break;
+    if (Number.isNaN(parseInt(old[i], 10))) break;
     s += old[i];
   }
   var x = parseInt(s, 10);
   if (x >= min && x <= max) return x;
   return null;
-}
-
-function isOneDigit(s: string) {
-  switch (s) {
-    case "0":
-    case "1":
-    case "2":
-    case "3":
-    case "4":
-    case "5":
-    case "6":
-    case "7":
-    case "8":
-    case "9":
-      return true;
-    default:
-      return false;
-  }
 }
 
 export function v4AddrToBytes(old: string) {
@@ -82,89 +64,26 @@ export function v4AddrToBytes(old: string) {
   return null;
 }
 
-function parseHextet(s: string) {
-  if (s.trim().length < 1 || s.trim().length > 4) return Number.NaN;
-  var val = 0;
-  for (var i = 0; i < s.length; i++) {
-    if (i >= 4) return Number.NaN;
-    var p = 4 * (s.length - i - 1);
-    switch (s[i]) {
-      case "0":
-        break;
-      case "1":
-        val += 1 * Math.pow(2, p);
-        break;
-      case "2":
-        val += 2 * Math.pow(2, p);
-        break;
-      case "3":
-        val += 3 * Math.pow(2, p);
-        break;
-      case "4":
-        val += 4 * Math.pow(2, p);
-        break;
-      case "5":
-        val += 5 * Math.pow(2, p);
-        break;
-      case "6":
-        val += 6 * Math.pow(2, p);
-        break;
-      case "7":
-        val += 7 * Math.pow(2, p);
-        break;
-      case "8":
-        val += 8 * Math.pow(2, p);
-        break;
-      case "9":
-        val += 9 * Math.pow(2, p);
-        break;
-      case "a":
-        val += 10 * Math.pow(2, p);
-        break;
-      case "b":
-        val += 11 * Math.pow(2, p);
-        break;
-      case "c":
-        val += 12 * Math.pow(2, p);
-        break;
-      case "d":
-        val += 13 * Math.pow(2, p);
-        break;
-      case "e":
-        val += 14 * Math.pow(2, p);
-        break;
-      case "f":
-        val += 15 * Math.pow(2, p);
-        break;
-      default:
-        return Number.NaN;
-    }
-  }
-  return val;
-}
-
 /* 
-  https://tools.ietf.org/html/rfc3986
-    ffff:fc00::1:1234/64
-    [fde4:3510:269e:ffbd::/64]
   https://tools.ietf.org/html/rfc4291
   https://tools.ietf.org/html/rfc5952#section-4
+  https://tools.ietf.org/html/rfc3986
+    ffff:fc00::1:1234/64
+    [fde4:3510:269e:ffbd::]
     [2001:db8::1]:80
-    2001:db8::1:80
+    2001:db8::1:80  // not valid!
     2001:db8::1.80
     2001:db8::1 port 80
     2001:db8::1p80
     2001:db8::1#80
 */
 
-export function v6AddrToBytes(old: string) {
+export function v6AddrToBytes(s: string) {
   const bytes = new Array(16).fill(0) as number[];
-  if (old.length === 0) return null;
-  if (old[0] === "[") {
-    old = removeBrackets(old);
-  }
-  if (old === "::") return bytes;
-  var halves = old.split("::");
+  if (s.length === 0) return null;
+  s = removeBrackets(s);
+  if (s === "::") return bytes;
+  var halves = s.split("::");
   if (halves.length === 0 || halves.length > 2) return null;
   var leftByteIndex = parseLeftHalf(bytes, halves[0]);
   if (leftByteIndex === null) return null;
@@ -176,12 +95,25 @@ export function v6AddrToBytes(old: string) {
 }
 
 function removeBrackets(s: string) {
-  for (var i = s.length - 1; i >= 0; i--) {
-    if (s[i] === "]") {
-      return s.substring(1, i);
+  if (s.startsWith("[")) {
+    for (var i = s.length - 1; i >= 0; i--) {
+      if (s[i] === "]") {
+        return s.substring(1, i);
+      }
     }
   }
-  return s.substring(1);
+  return s;
+}
+
+function parseHextet(s: string) {
+  if (s.trim().length < 1 || s.trim().length > 4) return Number.NaN;
+  var val = 0;
+  for (var i = 0; i < s.length; i++) {
+    var x = parseInt(s[i], 16);
+    if (Number.isNaN(x)) return x;
+    val += x * Math.pow(2, 4 * (s.length - i - 1));
+  }
+  return val;
 }
 
 function parseLeftHalf(bytes: number[], leftHalf: string) {

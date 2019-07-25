@@ -72,7 +72,8 @@ export function findUnusedSubnets(aggregate: string, subnets: string[], strict?:
       subnetworks.push(net);
     }
   }
-  const unused = shared.findNetworkGaps(agg, shared.sortNetworks(subnetworks));
+  shared.sortNetworks(subnetworks);
+  const unused = shared.findNetworkGaps(agg, subnetworks);
   return Array.from(unused, (net: Network) => net.toString());
 }
 
@@ -262,10 +263,8 @@ export function nextNetwork(network: string, strict?: boolean, throwErrors?: boo
 export function rangeOfNetworks(startAddress: string, stopAddress: string, throwErrors?: boolean) {
   let startAddr = new Address(startAddress, throwErrors);
   if (!startAddr) return null;
-
   let stopAddr = new Address(stopAddress, throwErrors);
   if (!stopAddr) return null;
-
   if (startAddr.bytes().length !== stopAddr.bytes().length) {
     if (throwErrors) throw errors.MixingIPv4AndIPv6;
     return null;
@@ -317,7 +316,7 @@ export function sort(networkAddresses: string[], throwErrors?: boolean) {
     }
     subnets[i] = new Network().from(addr, cidr);
   }
-  subnets = shared.sortNetworks(subnets);
+  shared.sortNetworks(subnets);
   const results = new Array(subnets.length) as string[];
   for (let i = 0; i < subnets.length; i++) {
     if (foundCIDR) {
@@ -354,7 +353,7 @@ export function summarize(networks: string[], strict?: boolean, throwErrors?: bo
       return null;
     }
   }
-  subnets = shared.sortNetworks(subnets);
+  shared.sortNetworks(subnets);
   subnets = shared.summarizeSortedNetworks(subnets);
   const results = new Array(subnets.length) as string[];
   for (let i = 0; i < subnets.length; i++) {

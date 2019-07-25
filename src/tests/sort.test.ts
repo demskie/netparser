@@ -124,7 +124,10 @@ test("cross check all sorting methods", () => {
   const charlie = Array.from(alpha, (net: Network) => net.duplicate());
 
   const sortedAlpha = sort.insertionSort(alpha);
-  const sortedBravo = sort.radixSort(bravo);
+  const sortedBravo = (() => {
+    sort.radixSort(bravo);
+    return bravo;
+  })();
   const sortedCharlie = nativeSort(charlie);
 
   const sortedAlphaStrings = Array.from(sortedAlpha, (net: Network) => net.toString());

@@ -4,6 +4,16 @@ const BEFORE = -1;
 const EQUALS = 0;
 const AFTER = 1;
 
+export function isSorted(networks: Network[]) {
+  if (networks.length > 1) {
+    for (var i = 1; i < networks.length; i++) {
+      var x = networks[i - 1].compare(networks[i]);
+      if (x === AFTER || x === null) return false;
+    }
+  }
+  return true;
+}
+
 export function binarySearchForInsertionIndex(network: Network, sortedNetworks: Network[]) {
   if (!sortedNetworks || sortedNetworks.length === 0) return 0;
   let left = 0;
@@ -129,5 +139,4 @@ function msdRadixSort(networks: Network[], start: number, stop: number, byteInde
 
 export function radixSort(networks: Network[]) {
   msdRadixSort(networks, 0, networks.length, -1);
-  return networks;
 }
