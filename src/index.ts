@@ -362,12 +362,14 @@ export function summarize(networks: string[], strict?: boolean, throwErrors?: bo
   return results;
 }
 
+export type Matcher = Matcher;
+
 module.exports = {
+  Matcher,
   baseAddress,
   broadcastAddress,
   findUnusedSubnets,
   ip,
-  Matcher,
   network,
   networkComesBefore,
   networkContainsAddress,
