@@ -362,7 +362,7 @@ export function summarize(networks: string[], strict?: boolean, throwErrors?: bo
   return results;
 }
 
-export type Matcher = Matcher;
+export { Matcher } from "./match";
 
 module.exports = {
   Matcher,
