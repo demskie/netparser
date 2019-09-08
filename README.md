@@ -1,6 +1,6 @@
 # netparser
 
-## Parse and manipulate IPv4 and IPv6 network addresses.
+## Parse and manipulate IPv4 and IPv6 network addresses
 
 [![Build Status](https://travis-ci.org/demskie/netparser.svg?branch=master)](https://travis-ci.org/demskie/netparser) [![Coverage Status](https://coveralls.io/repos/github/demskie/netparser/badge.svg?branch=master)](https://coveralls.io/github/demskie/netparser?branch=master)
 [![Dependency Status](https://david-dm.org/demskie/netparser/status.svg)](https://david-dm.org/demskie/netparser#info=dependencies&view=table)
@@ -14,7 +14,7 @@ npm install netparser
 ## Examples
 
 ```js
-import netparser from 'netparser';
+import * as netparser from 'netparser';
 
 netparser.baseAddress('b011:a2c2:7328:cc01:4ee7:e2ec:6269:babf/73');
 // returns 'b011:a2c2:7328:cc01:4e80::'

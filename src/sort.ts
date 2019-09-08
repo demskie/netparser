@@ -14,6 +14,19 @@ export function isSorted(networks: Network[]) {
   return true;
 }
 
+export function nativeSort(networks: Network[]) {
+  return networks.sort((a, b) => {
+    var aBytes = a.addr.bytes();
+    var bBytes = b.addr.bytes();
+    if (aBytes.length !== bBytes.length) return aBytes.length - bBytes.length;
+    for (var i = 0; i < aBytes.length; i++) {
+      if (aBytes[i] !== bBytes[i]) return aBytes[i] - bBytes[i];
+    }
+    if (a.cidr() !== b.cidr()) return a.cidr() - b.cidr();
+    return 0;
+  });
+}
+
 export function binarySearchForInsertionIndex(network: Network, sortedNetworks: Network[]) {
   if (!sortedNetworks || sortedNetworks.length === 0) return 0;
   let left = 0;
