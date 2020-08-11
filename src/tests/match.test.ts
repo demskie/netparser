@@ -16,7 +16,7 @@ test("sanity check Matcher #1", () => {
     "192.168.0.255/32"
   ];
   const matcher = new match.Matcher(input);
-  expect(matcher.has("192.168.0.254")).toEqual(false);
+  expect(matcher.has("192.168.0.254")).toEqual(null);
 });
 
 test("sanity check Matcher #2", () => {
@@ -35,7 +35,11 @@ test("sanity check Matcher #2", () => {
     "192.168.0.255/32"
   ];
   const matcher = new match.Matcher(input);
-  expect(matcher.has("192.168.0.254")).toEqual(true);
+  expect(matcher.has("192.168.0.254")).toEqual({
+    addr: { arr: [192, 168, 0, 0] },
+    netbits: 24,
+    network: "192.168.0.0/24"
+  });
 });
 
 test("sanity check Matcher #3", () => {
@@ -54,7 +58,11 @@ test("sanity check Matcher #3", () => {
     "192.168.0.255/32"
   ];
   const matcher = new match.Matcher(input);
-  expect(matcher.has("192.168.0.254")).toEqual(true);
+  expect(matcher.has("192.168.0.254")).toEqual({
+    addr: { arr: [192, 168, 0, 0] },
+    netbits: 24,
+    network: "192.168.0.0/24"
+  });
 });
 
 test("sanity check Matcher #4", () => {
@@ -73,7 +81,7 @@ test("sanity check Matcher #4", () => {
     "192.168.0.255/32"
   ];
   const matcher = new match.Matcher(input);
-  expect(matcher.has("foobar")).toEqual(false);
+  expect(matcher.has("foobar")).toEqual(null);
 });
 
 test("sanity check Matcher #5", () => {
@@ -92,7 +100,11 @@ test("sanity check Matcher #5", () => {
     "192.168.0.255/32"
   ];
   const matcher = new match.Matcher(input);
-  expect(matcher.has("192.168.0.255")).toEqual(true);
+  expect(matcher.has("192.168.0.255")).toEqual({
+    addr: { arr: [192, 168, 0, 255] },
+    netbits: 32,
+    network: "192.168.0.255/32"
+  });
 });
 
 test("sanity check Matcher #6", () => {
@@ -111,7 +123,7 @@ test("sanity check Matcher #6", () => {
     "192.168.0.254/31"
   ];
   const matcher = new match.Matcher(input);
-  expect(matcher.has("192.168.0.25")).toEqual(false);
+  expect(matcher.has("192.168.0.25")).toEqual(null);
 });
 
 test("sanity check Matcher #6", () => {
@@ -131,7 +143,7 @@ test("sanity check Matcher #6", () => {
   ];
 
   const matcher = new match.Matcher(input);
-  expect(matcher.has("192.168.0.0")).toEqual(false);
+  expect(matcher.has("192.168.0.0")).toEqual(null);
 });
 
 test("sanity check Matcher #7", () => {
@@ -150,7 +162,11 @@ test("sanity check Matcher #7", () => {
     "192.168.0.254/32"
   ];
   const matcher = new match.Matcher(input);
-  expect(matcher.has("192.168.0.124/32")).toEqual(true);
+  expect(matcher.has("192.168.0.124/32")).toEqual({
+    addr: { arr: [192, 168, 0, 123] },
+    netbits: 31,
+    network: "192.168.0.123/32"
+  });
 });
 
 test("sanity check Matcher #8", () => {
@@ -169,7 +185,11 @@ test("sanity check Matcher #8", () => {
     "192.168.0.254/31"
   ];
   const matcher = new match.Matcher(input);
-  expect(matcher.has("192.168.0.255")).toEqual(true);
+  expect(matcher.has("192.168.0.255")).toEqual({
+    addr: { arr: [192, 168, 0, 254] },
+    netbits: 31,
+    network: "192.168.0.254/31"
+  });
 });
 
 test("sanity check Matcher #9", () => {
@@ -191,5 +211,9 @@ test("sanity check Matcher #9", () => {
   input.forEach((s: string) => {
     matcher.add(s);
   });
-  expect(matcher.has("192.168.0.255")).toEqual(true);
+  expect(matcher.has("192.168.0.255")).toEqual({
+    addr: { arr: [192, 168, 0, 254] },
+    netbits: 31,
+    network: "192.168.0.254/31"
+  });
 });

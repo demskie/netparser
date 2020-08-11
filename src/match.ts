@@ -36,16 +36,16 @@ export class Matcher {
    *
    * @param network - An address or subnet
    *
-   * @returns A boolean
+   * @returns A Network or null
    */
   public has(network: string) {
     var net = shared.parseBaseNetwork(network, false, false);
-    if (!net || !net.isValid()) return false;
+    if (!net || !net.isValid()) return null;
     var idx = sort.binarySearchForInsertionIndex(net, this.sorted);
-    if (idx < 0) return false;
-    if (idx < this.sorted.length && this.sorted[idx].contains(net)) return true;
-    if (idx - 1 >= 0 && this.sorted[idx - 1].contains(net)) return true;
-    return false;
+    if (idx < 0) return null;
+    if (idx < this.sorted.length && this.sorted[idx].contains(net)) return this.sorted[idx];
+    if (idx - 1 >= 0 && this.sorted[idx - 1].contains(net)) return this.sorted[idx - 1];
+    return null;
   }
 
   /**
