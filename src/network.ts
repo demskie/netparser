@@ -8,9 +8,12 @@ const AFTER = 1;
 
 export class Network {
   public readonly addr = new Address();
+  public readonly network?: string;
   private netbits = -1;
 
   public constructor(network?: string, throwErrors?: boolean) {
+    this.network = network;
+
     if (network) {
       var net = parse.network(network, throwErrors);
       if (net) {
