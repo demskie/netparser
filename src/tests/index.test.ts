@@ -430,7 +430,7 @@ test("sanity check summarize #5", () => {
     "10.9.201.66",
     "10.9.201.69",
     "10.9.201.74"
-  ]; // Shuffled, but effectively ranging from 10.9.201.65 to 10.9.201.72 + 10.9.201.74
+  ]; // Shuffled, but effectively ranging from 10.9.201.65 to 10.9.201.72 + 10.9.201.74 + 10.9.201.75
 
   const output = index.summarize(input, true);
   expect(output).toBeDefined();
