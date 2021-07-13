@@ -26,27 +26,12 @@ function increaseSizeByOneBit(network: Network): Network {
 }
 
 export function summarizeSortedNetworks(sorted: Network[]): Network[] {
-  const summarized = [] as Network[];
-  for (let idx = 0; idx < sorted.length; idx++) {
-    summarized.push(sorted[idx]);
-    let skipped = 0;
-    for (let i = idx + 1; i < sorted.length; i++) {
-      if (sorted[idx].contains(sorted[i])) {
-        skipped++;
-        continue;
-      }
-      if (sorted[idx].cidr() === sorted[i].cidr()) {
-        if (sorted[idx].adjacent(sorted[i])) {
-          const wider = increaseSizeByOneBit(sorted[idx].duplicate());
-          if (wider.contains(sorted[i])) {
-            increaseSizeByOneBit(sorted[idx]);
-            skipped++;
-            continue;
-          }
-        }
-      }
-      break;
+  const summarized: Network[] = [sorted[0]];
+  for (let idx = 1; idx < sorted.length; idx++) {
+    if (summarized[summarized.length - 1].contains(sorted[idx])) {
+      continue;
     }
+    summarized.push(sorted[idx]);
     while (summarized.length >= 2) {
       const a = summarized[summarized.length - 2];
       const b = summarized[summarized.length - 1];
@@ -56,8 +41,6 @@ export function summarizeSortedNetworks(sorted: Network[]): Network[] {
       increaseSizeByOneBit(a);
       summarized.pop();
     }
-
-    idx += skipped;
   }
   return summarized;
 }

@@ -1,7 +1,7 @@
 import * as index from "../index";
 
 expect.extend({
-  toContainAddresses(received, addresses) {
+  toContainAddresses(received: string[], addresses: string[]) {
     const notFound = addresses.filter((i: string) => {
       return undefined === received.find((value: string) => index.networkContainsAddress(value, i));
     });
@@ -425,19 +425,22 @@ test("sanity check summarize #5", () => {
     "10.9.201.70",
     "10.9.201.65",
     "10.9.201.72",
+    "10.9.201.75",
     "10.9.201.67",
     "10.9.201.66",
-    "10.9.201.69"
-  ]; // Shuffled, but effectively ranging from 10.9.201.65 to 10.9.201.72
+    "10.9.201.69",
+    "10.9.201.74"
+  ]; // Shuffled, but effectively ranging from 10.9.201.65 to 10.9.201.72 + 10.9.201.74
 
   const output = index.summarize(input, true);
   expect(output).toBeDefined();
   expect(output).not.toContainAddresses(["192.168.0.0"]);
   expect(output).not.toContainAddresses(["10.9.201.64"]);
   expect(output).not.toContainAddresses(["10.9.201.73"]);
+  expect(output).not.toContainAddresses(["10.9.201.76"]);
   expect(output).toContainAddresses(input);
 
-  const expectedOutput = ["10.9.201.65/32", "10.9.201.66/31", "10.9.201.68/30", "10.9.201.72/32"];
+  const expectedOutput = ["10.9.201.65/32", "10.9.201.66/31", "10.9.201.68/30", "10.9.201.72/32", "10.9.201.74/31"];
   expect(output).toEqual(expectedOutput);
 });
 
