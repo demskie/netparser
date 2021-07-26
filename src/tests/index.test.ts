@@ -1,5 +1,18 @@
 import * as index from "../index";
 
+expect.extend({
+  toContainAddresses(received: string[], addresses: string[]) {
+    const notFound = addresses.filter((i: string) => {
+      return undefined === received.find((value: string) => index.networkContainsAddress(value, i));
+    });
+    if (notFound.length > 0) {
+      return { message: () => `expected to find ${notFound} in ${received}`, pass: false };
+    } else {
+      return { message: () => `expected not to find ${addresses} in ${received}`, pass: true };
+    }
+  }
+});
+
 test("sanity check baseAddress #1", () => {
   const output = index.baseAddress("192.168.200.113/24", true);
   expect(output).toEqual("192.168.200.0");
@@ -397,12 +410,38 @@ test("sanity check summarize #2", () => {
 
 test("sanity check summarize #3", () => {
   const output = index.summarize(["192.168.0.0", "192.168.0.2/31", "192.168.0.3", "192.168.0.4/31"], true);
-  expect(output).toEqual(["192.168.0.0/32", "192.168.0.2/30"]);
+  expect(output).toEqual(["192.168.0.0/32", "192.168.0.2/31", "192.168.0.4/31"]);
 });
 
 test("sanity check summarize #4", () => {
   const output = index.summarize(["192.168.0.0/31", "192.168.0.2/31", "192.168.0.3", "192.168.0.5/32"], true);
   expect(output).toEqual(["192.168.0.0/30", "192.168.0.5/32"]);
+});
+
+test("sanity check summarize #5", () => {
+  const input = [
+    "10.9.201.68",
+    "10.9.201.71",
+    "10.9.201.70",
+    "10.9.201.65",
+    "10.9.201.72",
+    "10.9.201.75",
+    "10.9.201.67",
+    "10.9.201.66",
+    "10.9.201.69",
+    "10.9.201.74"
+  ]; // Shuffled, but effectively ranging from 10.9.201.65 to 10.9.201.72 + 10.9.201.74 + 10.9.201.75
+
+  const output = index.summarize(input, true);
+  expect(output).toBeDefined();
+  expect(output).not.toContainAddresses(["192.168.0.0"]);
+  expect(output).not.toContainAddresses(["10.9.201.64"]);
+  expect(output).not.toContainAddresses(["10.9.201.73"]);
+  expect(output).not.toContainAddresses(["10.9.201.76"]);
+  expect(output).toContainAddresses(input);
+
+  const expectedOutput = ["10.9.201.65/32", "10.9.201.66/31", "10.9.201.68/30", "10.9.201.72/32", "10.9.201.74/31"];
+  expect(output).toEqual(expectedOutput);
 });
 
 // https://tools.ietf.org/html/rfc5952#section-4

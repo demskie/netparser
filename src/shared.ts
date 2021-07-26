@@ -19,26 +19,28 @@ export function sortNetworks(networks: Network[]) {
   sort.nativeSort(networks);
 }
 
-export function summarizeSortedNetworks(sorted: Network[]) {
-  const summarized = [] as Network[];
-  for (let idx = 0; idx < sorted.length; idx++) {
-    summarized.push(sorted[idx]);
-    let skipped = 0;
-    for (let i = idx + 1; i < sorted.length; i++) {
-      if (sorted[idx].contains(sorted[i])) {
-        skipped++;
-        continue;
-      }
-      if (sorted[idx].cidr() === sorted[i].cidr()) {
-        if (sorted[idx].adjacent(sorted[i])) {
-          sorted[idx].setCIDR(sorted[idx].cidr() - 1);
-          skipped++;
-          continue;
-        }
-      }
-      break;
+function increaseSizeByOneBit(network: Network): Network {
+  const wider = network.setCIDR(network.cidr() - 1);
+  wider.addr.applySubnetMask(wider.cidr());
+  return wider;
+}
+
+export function summarizeSortedNetworks(sorted: Network[]): Network[] {
+  const summarized: Network[] = [sorted[0]];
+  for (let idx = 1; idx < sorted.length; idx++) {
+    if (summarized[summarized.length - 1].contains(sorted[idx])) {
+      continue;
     }
-    idx += skipped;
+    summarized.push(sorted[idx]);
+    while (summarized.length >= 2) {
+      const a = summarized[summarized.length - 2];
+      const b = summarized[summarized.length - 1];
+      if (a.cidr() != b.cidr() || !a.addr.isBaseAddress(a.cidr() - 1) || !a.adjacent(b)) {
+        break;
+      }
+      increaseSizeByOneBit(a);
+      summarized.pop();
+    }
   }
   return summarized;
 }
