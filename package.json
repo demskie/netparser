@@ -6,8 +6,7 @@
   "scripts": {
     "build": "tsc && jest --coverage",
     "test": "tsc --noEmit && jest --coverage",
-    "prebench": "npm --prefix src/benchmarks install src/benchmarks",
-    "bench": "npm run prebench && npm run bench-index && npm run bench-match",
+    "bench": "npm run bench-index && npm run bench-match",
     "bench-index": "ts-node -T src/benchmarks/index.bench.ts",
     "bench-match": "ts-node -T src/benchmarks/match.bench.ts",
     "bench-sort": "ts-node -T src/benchmarks/sort.bench.ts"
@@ -92,7 +91,14 @@
     "ts-node": "^8.10.2",
     "typedoc": "^0.15.8",
     "typedoc-plugin-markdown": "^2.4.2",
-    "typescript": "^3.9.10"
+    "typescript": "^3.9.10",
+    "@types/benchmark": "^2.1.1",
+    "@types/netmask": "^1.0.30",
+    "benchmark": "^2.1.4",
+    "cidr-matcher": "^2.1.1",
+    "ip-address": "^8.1.0",
+    "ipaddr.js": "^2.0.1",
+    "netmask": "^2.0.2"
   },
   "dependencies": {}
 }
