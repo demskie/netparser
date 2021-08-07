@@ -26,7 +26,7 @@ function increaseSizeByOneBit(network: Network): Network {
 }
 
 export function summarizeSortedNetworks(sorted: Network[]): Network[] {
-  const summarized: Network[] = [sorted[0]];
+  const summarized: Network[] = sorted.slice(0, 1);
   for (let idx = 1; idx < sorted.length; idx++) {
     if (summarized[summarized.length - 1].contains(sorted[idx])) {
       continue;
