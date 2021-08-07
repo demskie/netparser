@@ -3,7 +3,7 @@
 import { Network } from "./network";
 import { Address } from "./address";
 
-var ipv4Ranges = undefined as any;
+let ipv4Ranges = undefined as any;
 
 function createIPv4Ranges() {
   return {
@@ -41,7 +41,7 @@ function createIPv4Ranges() {
   };
 }
 
-var ipv6Ranges = undefined as any;
+let ipv6Ranges = undefined as any;
 
 function createIPv6Ranges() {
   return {
@@ -88,13 +88,14 @@ function hasKey<O>(obj: O, key: keyof any): key is keyof O {
 
 export function check(address: Address, key: string) {
   if (address.isValid()) {
+    let ranges = undefined as any;
     if (address.isIPv4()) {
-      var ranges = ipv4Ranges ? ipv4Ranges : createIPv4Ranges();
+      ranges = ipv4Ranges ? ipv4Ranges : createIPv4Ranges();
     } else {
-      var ranges = ipv6Ranges ? ipv6Ranges : createIPv6Ranges();
+      ranges = ipv6Ranges ? ipv6Ranges : createIPv6Ranges();
     }
     if (hasKey(ranges, key)) {
-      for (var net of ranges[key]) {
+      for (let net of ranges[key]) {
         if (net.contains(address.toNetwork())) return true;
       }
     }

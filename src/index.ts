@@ -62,7 +62,7 @@ export function findUnusedSubnets(aggregate: string, subnets: string[], strict?:
   const agg = shared.parseBaseNetwork(aggregate, strict, throwErrors);
   if (!agg || !agg.isValid()) return null;
   let subnetworks = [] as Network[];
-  for (var s of subnets) {
+  for (let s of subnets) {
     const net = shared.parseBaseNetwork(s, strict, throwErrors);
     if (!net || !net.isValid()) {
       if (strict) return null;
@@ -275,7 +275,7 @@ export function rangeOfNetworks(startAddress: string, stopAddress: string, throw
     case AFTER:
       [startAddr, stopAddr] = [stopAddr, startAddr];
   }
-  var results = [] as string[];
+  let results = [] as string[];
   const net = new Network().from(startAddr, 0);
   while (net.addr.lessThanOrEqual(stopAddr)) {
     while (!net.addr.isBaseAddress(net.cidr()) || net.lastAddr().greaterThan(stopAddr)) {

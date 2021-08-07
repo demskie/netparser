@@ -6,8 +6,8 @@ const AFTER = 1;
 
 export function isSorted(networks: Network[]) {
   if (networks.length > 1) {
-    for (var i = 1; i < networks.length; i++) {
-      var x = networks[i - 1].compare(networks[i]);
+    for (let i = 1; i < networks.length; i++) {
+      let x = networks[i - 1].compare(networks[i]);
       if (x === AFTER || x === null) return false;
     }
   }
@@ -16,10 +16,10 @@ export function isSorted(networks: Network[]) {
 
 export function nativeSort(networks: Network[]) {
   return networks.sort((a, b) => {
-    var aBytes = a.addr.bytes();
-    var bBytes = b.addr.bytes();
+    let aBytes = a.addr.bytes();
+    let bBytes = b.addr.bytes();
     if (aBytes.length !== bBytes.length) return aBytes.length - bBytes.length;
-    for (var i = 0; i < aBytes.length; i++) {
+    for (let i = 0; i < aBytes.length; i++) {
       if (aBytes[i] !== bBytes[i]) return aBytes[i] - bBytes[i];
     }
     if (a.cidr() !== b.cidr()) return a.cidr() - b.cidr();
@@ -32,10 +32,10 @@ export function binarySearchForInsertionIndex(network: Network, sortedNetworks: 
   let left = 0;
   let right = sortedNetworks.length - 1;
   while (left < right) {
-    let middle = Math.floor((left + right) / 2);
+    let middle = Math.floor(left + (right - left) / 2);
     switch (sortedNetworks[middle].compare(network)) {
       case EQUALS:
-        return middle;
+        return middle + 1;
       case BEFORE:
         left = middle + 1;
         break;
@@ -51,7 +51,7 @@ export function binarySearchForInsertionIndex(network: Network, sortedNetworks: 
 export function insertionSort(networks: Network[]) {
   const sorted = [] as Network[];
   networks.forEach((net: Network) => {
-    var idx = binarySearchForInsertionIndex(net, sorted);
+    let idx = binarySearchForInsertionIndex(net, sorted);
     sorted.splice(idx, 0, net);
   });
   return sorted;
@@ -141,7 +141,7 @@ function msdRadixSort(networks: Network[], start: number, stop: number, byteInde
   // recurse and sort lower bits
   if (byteIndex < 16) {
     let lastPrefixSum = 0;
-    for (var i = 0; i < runningPrefixSum.length; i++) {
+    for (let i = 0; i < runningPrefixSum.length; i++) {
       if (runningPrefixSum[i] !== lastPrefixSum) {
         msdRadixSort(networks, start + lastPrefixSum, start + runningPrefixSum[i], byteIndex + 1);
       }

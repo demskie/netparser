@@ -14,7 +14,7 @@ export class Address {
 
   public constructor(address?: string, throwErrors?: boolean) {
     if (address) {
-      var net = parse.network(address, throwErrors);
+      let net = parse.network(address, throwErrors);
       if (net) {
         this.arr = net.bytes;
         return;
@@ -96,7 +96,7 @@ export class Address {
   }
 
   public lessThanOrEqual(address: Address) {
-    var result = this.compare(address);
+    let result = this.compare(address);
     if (result === null) return false;
     return result <= EQUALS;
   }
@@ -106,7 +106,7 @@ export class Address {
   }
 
   public greaterThanOrEqual(address: Address) {
-    var result = this.compare(address);
+    let result = this.compare(address);
     if (result === null) return false;
     return result >= EQUALS;
   }
@@ -125,7 +125,7 @@ export class Address {
     if (this.arr.length > address.arr.length) return AFTER;
 
     // compare addresses
-    for (var i = 0; i < this.arr.length; i++) {
+    for (let i = 0; i < this.arr.length; i++) {
       if (this.arr[i] < address.arr[i]) return BEFORE;
       if (this.arr[i] > address.arr[i]) return AFTER;
     }
@@ -136,8 +136,8 @@ export class Address {
 
   public applySubnetMask(cidr: number) {
     if (!this.isValid()) return this;
-    var maskBits = this.arr.length * 8 - cidr;
-    for (var i = this.arr.length - 1; i >= 0; i--) {
+    let maskBits = this.arr.length * 8 - cidr;
+    for (let i = this.arr.length - 1; i >= 0; i--) {
       switch (Math.max(0, Math.min(maskBits, 8))) {
         case 0:
           return this;
@@ -174,8 +174,8 @@ export class Address {
   public isBaseAddress(cidr: number) {
     if (!this.isValid() || cidr < 0 || cidr > this.arr.length * 8) return false;
     if (cidr === this.arr.length * 8) return true;
-    var maskBits = this.arr.length * 8 - cidr;
-    for (var i = this.arr.length - 1; i >= 0; i--) {
+    let maskBits = this.arr.length * 8 - cidr;
+    for (let i = this.arr.length - 1; i >= 0; i--) {
       switch (Math.max(0, Math.min(maskBits, 8))) {
         case 0:
           return true;
@@ -250,9 +250,9 @@ export class Address {
   }
 
   private offsetAddress(cidr: number, forwards: boolean, throwErrors?: boolean) {
-    var targetByte = Math.floor((cidr - 1) / 8);
+    let targetByte = Math.floor((cidr - 1) / 8);
     if (this.isValid() && targetByte >= 0 && targetByte < this.arr.length) {
-      var increment = Math.pow(2, 8 - (cidr - targetByte * 8));
+      let increment = Math.pow(2, 8 - (cidr - targetByte * 8));
       this.arr[targetByte] += increment * (forwards ? 1 : -1);
       if (targetByte >= 0) {
         if (this.arr[targetByte] < 0) {

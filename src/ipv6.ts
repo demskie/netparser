@@ -7,7 +7,7 @@ function findLongestZeroHextetChain(bytes: number[], throwErrors?: boolean) {
   if (bytes.length === 16) {
     const canidate = { start: 0, length: 0 };
     const longest = { start: 0, length: 0 };
-    for (var i = 0; i < bytes.length; i += 2) {
+    for (let i = 0; i < bytes.length; i += 2) {
       if (bytes[i] !== 0 || bytes[i + 1] !== 0) {
         canidate.start = 0;
         canidate.length = 0;
@@ -31,8 +31,8 @@ function findLongestZeroHextetChain(bytes: number[], throwErrors?: boolean) {
 export function bytesToAddr(bytes: number[], throwErrors?: boolean) {
   const longestHextetChain = findLongestZeroHextetChain(bytes, throwErrors);
   if (longestHextetChain !== null) {
-    var result = "";
-    for (var i = 0; i < 16; i += 2) {
+    let result = "";
+    for (let i = 0; i < 16; i += 2) {
       if (i === longestHextetChain.start && longestHextetChain.length >= 4) {
         result += i === 0 ? "::" : ":";
         i += longestHextetChain.length - 2;

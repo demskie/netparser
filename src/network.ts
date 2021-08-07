@@ -12,7 +12,7 @@ export class Network {
 
   public constructor(network?: string, throwErrors?: boolean) {
     if (network) {
-      var net = parse.network(network, throwErrors);
+      let net = parse.network(network, throwErrors);
       if (net) {
         this.addr.setBytes(net.bytes);
         this.netbits = net.cidr;
@@ -45,7 +45,7 @@ export class Network {
   }
 
   public duplicate() {
-    var network = new Network();
+    let network = new Network();
     if (this.isValid()) {
       network.addr.setBytes(this.addr.bytes().slice());
       network.netbits = this.netbits;
@@ -71,9 +71,9 @@ export class Network {
   }
 
   public lastAddr() {
-    var addr = this.addr.duplicate().applySubnetMask(this.netbits);
-    var maxCIDR = this.addr.bytes().length * 8;
-    for (var i = this.netbits + 1; i <= maxCIDR; i++) addr.increase(i);
+    let addr = this.addr.duplicate().applySubnetMask(this.netbits);
+    let maxCIDR = this.addr.bytes().length * 8;
+    for (let i = this.netbits + 1; i <= maxCIDR; i++) addr.increase(i);
     return addr;
   }
 
@@ -98,7 +98,7 @@ export class Network {
     if (!this.isValid() || !network.isValid()) return null;
 
     // compare addresses
-    var cmp = this.addr.compare(network.addr);
+    let cmp = this.addr.compare(network.addr);
     if (cmp !== EQUALS) return cmp;
 
     // compare subnet mask length
@@ -124,8 +124,8 @@ export class Network {
     if (this.addr.compare(network.addr) === AFTER) return false;
 
     // get the next network address for both
-    var next = this.duplicate().next();
-    var otherNext = network.duplicate().next();
+    let next = this.duplicate().next();
+    let otherNext = network.duplicate().next();
 
     // handle edge case where our next network address overflows
     if (!next.isValid()) return true;
@@ -146,11 +146,11 @@ export class Network {
 
     // handle edge cases
     if (this.netbits === 0 || network.netbits == 0) return true;
-    var cmp = this.addr.compare(network.addr);
+    let cmp = this.addr.compare(network.addr);
     if (cmp === EQUALS) return true;
 
     // ensure that alpha addr contains the baseAddress that comes first
-    var alpha: Network, bravo: Network;
+    let alpha: Network, bravo: Network;
     if (cmp === BEFORE) {
       alpha = this.duplicate().next();
       bravo = network.duplicate().next();
@@ -178,11 +178,11 @@ export class Network {
 
     // handle edge cases
     if (this.netbits === 0 || network.netbits == 0) return true;
-    var cmp = this.addr.compare(network.addr);
+    let cmp = this.addr.compare(network.addr);
     if (cmp === EQUALS) return false;
 
     // ensure that alpha addr contains the baseAddress that comes first
-    var alpha: Network, bravo: Network;
+    let alpha: Network, bravo: Network;
     if (cmp === BEFORE) {
       alpha = this.duplicate().next();
       bravo = network;
