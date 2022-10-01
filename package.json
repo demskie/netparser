@@ -1,6 +1,6 @@
 {
   "name": "netparser",
-  "version": "1.8.1",
+  "version": "1.9.0",
   "description": "parse and manipulate network addresses",
   "main": "lib/index.js",
   "scripts": {
@@ -81,7 +81,6 @@
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
     "coveralls": "^3.1.1",
-    "docts": "^0.2.0",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.4.0",

@@ -48,7 +48,7 @@ export function bytesToAddr(bytes: number[], throwErrors?: boolean) {
 }
 
 export function randomAddress() {
-  return bytesToAddr(Array.from(Array(16), () => Math.floor(Math.random() * 256)));
+  return bytesToAddr(Array.from(Array(16), () => Math.floor(Math.random() * 256))) as string;
 }
 
 const choices = Array.from(Array(127), (_, idx) => new weight.WeightedValue(Math.pow(2, idx), idx + 1));

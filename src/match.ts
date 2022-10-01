@@ -50,6 +50,28 @@ export class Matcher {
   }
 
   /**
+   * Query for the given network
+   *
+   * @example
+   * var matcher = new netparser.Matcher();
+   * matcher.add("10.0.0.0/24");
+   * matcher.has("10.0.0.2/31"); // returns "10.0.0.0/24"
+   *
+   * @param network - An address or subnet
+   *
+   * @returns The matched network or null
+   */
+   public get(network: string) {
+    let net = shared.parseBaseNetwork(network, false, false);
+    if (!net || !net.isValid()) return null;
+    let idx = sort.binarySearchForInsertionIndex(net, this.sorted);
+    if (idx < 0) return null;
+    if (idx < this.sorted.length && this.sorted[idx].contains(net)) return this.sorted[idx].toString();
+    if (idx - 1 >= 0 && this.sorted[idx - 1].contains(net)) return this.sorted[idx - 1].toString();
+    return null;
+  }
+
+  /**
    * Insert the given network into the Matcher
    *
    * @example
