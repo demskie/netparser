@@ -56,6 +56,22 @@ test("sanity check IPv4 intersects() #3", () => {
   expect(alpha.intersects(bravo)).toEqual(false);
 });
 
+test("sanity check IPv4 contains() with non-overlapping networks near max address", () => {
+  // 224.0.0.0/4 covers 224.0.0.0 - 239.255.255.255
+  // 240.0.0.0/4 covers 240.0.0.0 - 255.255.255.255
+  const alpha = new Network("224.0.0.0/4");
+  const bravo = new Network("240.0.0.0/4");
+  expect(alpha.contains(bravo)).toEqual(false);
+  expect(bravo.contains(alpha)).toEqual(false);
+});
+
+test("sanity check IPv4 contains() with actual containment", () => {
+  const alpha = new Network("192.168.0.0/16");
+  const bravo = new Network("192.168.1.0/24");
+  expect(alpha.contains(bravo)).toEqual(true);
+  expect(bravo.contains(alpha)).toEqual(false);
+});
+
 test("sanity check ipv4.randomAddress", () => {
   const output = ipv4.randomAddress();
   expect(index.ip(output)).toBeTruthy();
