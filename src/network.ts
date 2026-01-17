@@ -130,6 +130,10 @@ export class Network {
     // handle edge case where our next network address overflows
     if (!next.isValid()) return true;
 
+    // handle edge case where other next network address overflows
+    // if other extends to max address but we don't, we can't contain it
+    if (!otherNext.isValid()) return false;
+
     // our address should be more than or equal to the other address
     if (next.addr.compare(otherNext.addr) === BEFORE) return false;
 
@@ -149,21 +153,26 @@ export class Network {
     let cmp = this.addr.compare(network.addr);
     if (cmp === EQUALS) return true;
 
-    // ensure that alpha addr contains the baseAddress that comes first
+    // ensure that alpha is the network with the smaller base address
+    // and bravo is the network with the larger base address
     let alpha: Network, bravo: Network;
     if (cmp === BEFORE) {
-      alpha = this.duplicate().next();
-      bravo = network.duplicate().next();
+      alpha = this;
+      bravo = network;
     } else {
-      alpha = network.duplicate().next();
-      bravo = this.duplicate().next();
+      alpha = network;
+      bravo = this;
     }
 
-    // if either addresses overflowed than an intersection has occured
-    if (!alpha.isValid() || !bravo.isValid()) return true;
+    // get the next network address for alpha (the one with smaller base)
+    let alphaNext = alpha.duplicate().next();
 
-    // if alpha addr is now greater than or equal to bravo addr than we've intersected
-    if (alpha.addr.greaterThanOrEqual(bravo.addr)) return true;
+    // if alpha's next overflows, alpha extends to max address, so intersection occurs
+    if (!alphaNext.isValid()) return true;
+
+    // if alpha's next address is greater than bravo's base address, there's an intersection
+    // (meaning alpha's last address >= bravo's first address)
+    if (alphaNext.addr.greaterThan(bravo.addr)) return true;
 
     // otherwise we haven't intersected
     return false;

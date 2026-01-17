@@ -1,5 +1,6 @@
 import * as ipv6 from "../ipv6";
 import { Address } from "../address";
+import { Network } from "../network";
 
 test("sanity check IPv6 offset by /128", () => {
   const addr = new Address("2001:db8:122:344::");
@@ -29,4 +30,21 @@ test("sanity check ipv6.randomAddress", () => {
 test("sanity check ipv6.randomNetwork", () => {
   const addr = ipv6.randomNetwork();
   expect(addr.toString()).not.toEqual("");
+});
+
+test("sanity check IPv6 intersects() with non-overlapping networks", () => {
+  // 100::/50 has range 100:0:0:0:0:0:0:0 - 100:0:0:3fff:ffff:ffff:ffff:ffff
+  // ff00::/8 has range ff00:0:0:0:0:0:0:0 - ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+  // These clearly do not overlap
+  const alpha = new Network("100::/50");
+  const bravo = new Network("ff00::/8");
+  expect(alpha.intersects(bravo)).toEqual(false);
+  expect(bravo.intersects(alpha)).toEqual(false);
+});
+
+test("sanity check IPv6 intersects() with overlapping networks", () => {
+  const alpha = new Network("2001:db8::/32");
+  const bravo = new Network("2001:db8:1::/48");
+  expect(alpha.intersects(bravo)).toEqual(true);
+  expect(bravo.intersects(alpha)).toEqual(true);
 });

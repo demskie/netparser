@@ -184,6 +184,16 @@ test("sanity check networkContainsSubnet #3", () => {
   expect(output).toEqual(null);
 });
 
+test("sanity check networkContainsSubnet #4 with non-overlapping networks near max address", () => {
+  // 224.0.0.0/4 covers 224.0.0.0 - 239.255.255.255
+  // 240.0.0.0/4 covers 240.0.0.0 - 255.255.255.255
+  expect(index.networkContainsSubnet("224.0.0.0/4", "240.0.0.0/4")).toEqual(false);
+});
+
+test("sanity check summarize with adjacent networks near max address", () => {
+  expect(index.summarize(["224.0.0.0/4", "240.0.0.0/4"])).toEqual(["224.0.0.0/3"]);
+});
+
 test("sanity check networksIntersect #1", () => {
   const output = index.networksIntersect("192.168.0.0/24", "192.168.1.0/24", true, true);
   expect(output).toEqual(false);
